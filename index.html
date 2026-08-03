@@ -3230,11 +3230,14 @@ function bukaPreviewPDF(jenisBorang) {
             document.getElementById('negeriDefendan')?.value
         ].filter(Boolean).join(', ').toUpperCase() || '';
 
-        // 4. BINA JADUAL TUNTUTAN DARI MEMORI & KIRA JUMLAH BESAR
+// 4. BINA JADUAL TUNTUTAN DARI MEMORI & KIRA JUMLAH BESAR
         let htmlTuntutanRows = '';
         let jumlahKeseluruhanKetua = 0;
 
         if (memoriTuntutanKetua && memoriTuntutanKetua.length > 0) {
+            let N = memoriTuntutanKetua.length;
+            let rowSpan = N + 1; // +1 untuk baris kosong di bawah supaya garisan menegak lurus
+            
             memoriTuntutanKetua.forEach((item, index) => {
                 const jumlahNum = parseFloat(item.jumlah);
                 jumlahKeseluruhanKetua += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3244,29 +3247,101 @@ function bukaPreviewPDF(jenisBorang) {
                 if(!ket.startsWith('(')) ket = `(${ket}`;
                 if(!ket.endsWith(')')) ket = `${ket})`;
 
-                htmlTuntutanRows += `
+                // Hilangkan garisan melintang antara senarai tuntutan
+                let borderStyle = (index === 0) ? 'border-bottom: none;' : 'border-top: none; border-bottom: none;';
+
+                if (index === 0) {
+                    htmlTuntutanRows += `
                     <tr>
-                        <td style="width: 70%; padding: 1.5pt 2mm; border: none; border-right: 1px solid #000000; vertical-align: top;">
+                        <td rowspan="${rowSpan}" style="text-align: center; padding: 2mm; vertical-align: top;">1</td>
+                        <td rowspan="${rowSpan}" style="padding: 0; vertical-align: top;">
+                            <table class="nested-table">
+                                <tr><td style="width: 40%; font-weight: bold;">Nama (Huruf Besar)</td><td style="width: 2%;">:</td><td style="text-transform: uppercase;">${namaKetua}</td></tr>
+                                <tr><td style="font-weight: bold;">No. Kad Pengenalan</td><td>:</td><td>${noKpKetua}</td></tr>
+                                <!-- KEMASKINI: padding-bottom: 12mm DIBUANG SUPAYA RUANG AUTO -->
+                                <tr><td style="font-weight: bold; vertical-align: top;">Alamat</td><td style="vertical-align: top;">:</td><td style="text-transform: capitalize;">${alamatKetua}</td></tr>
+                                <tr><td style="font-weight: bold;">No. Telefon</td><td>:</td><td>${telKetua}</td></tr>
+                                <tr><td style="font-weight: bold;">Tarikh Mula Kerja</td><td>:</td><td>${tarikhMula}</td></tr>
+                                <tr><td style="font-weight: bold;">Tarikh Akhir Kerja</td><td>:</td><td>${tarikhAkhir}</td></tr>
+                                <tr><td style="font-weight: bold;">Jawatan Terakhir</td><td>:</td><td style="text-transform: capitalize;">${jawatan}</td></tr>
+                                <tr><td style="font-weight: bold;">Kadar Gaji</td><td>:</td><td>RM${gaji} sebulan</td></tr>
+                            </table>
+                        </td>
+                        
+                        <td style="padding: 1.5pt 2mm; ${borderStyle} vertical-align: top;">
                             ${item.jenis}<br><em>${ket}</em>
                         </td>
-                        <td style="width: 30%; padding: 1.5pt 2mm; text-align: right; border: none; vertical-align: top;">
+                        <td style="padding: 1.5pt 2mm; text-align: right; ${borderStyle} vertical-align: top;">
+                            ${jumlahCantik}
+                        </td>
+                        
+                        <td rowspan="${rowSpan}" style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
+                            {JUMLAH_BESAR}
+                        </td>
+                        <td rowspan="${rowSpan}" style="position: relative; padding: 2mm; vertical-align: top;">
+                            <div style="font-size: 10px; text-align: justify; margin-bottom: 25mm;">Saya dengan ini mengaku dan bersumpah bahawa segala maklumat yang diberikan ini adalah benar belaka.</div>
+                            <div class="sign-area">
+                                <div class="sign-line"></div>
+                                <div style="font-size: 11px;">Tandatangan</div>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                } else {
+                    htmlTuntutanRows += `
+                    <tr>
+                        <td style="padding: 1.5pt 2mm; ${borderStyle} vertical-align: top;">
+                            ${item.jenis}<br><em>${ket}</em>
+                        </td>
+                        <td style="padding: 1.5pt 2mm; text-align: right; ${borderStyle} vertical-align: top;">
                             ${jumlahCantik}
                         </td>
                     </tr>
-                `;
+                    `;
+                }
             });
-            // Baris ghaib untuk menolak sempadan (border) menegak supaya lurus ke bawah
+            
+            // Baris ghaib untuk menolak garisan menegak supaya terus lurus ke bawah
             htmlTuntutanRows += `
-                <tr>
-                    <td style="border: none; border-right: 1px solid #000000; height: 100%;"></td>
-                    <td style="border: none; height: 100%;"></td>
-                </tr>
+            <tr>
+                <td style="border-top: none; height: 100%;"></td>
+                <td style="border-top: none; height: 100%;"></td>
+            </tr>
             `;
         } else {
-            htmlTuntutanRows = `<tr><td colspan="2" style="padding: 4mm 2mm; text-align: center; border: none;">Tiada Tuntutan Direkodkan</td></tr>`;
+            htmlTuntutanRows = `
+            <tr>
+                <td style="text-align: center; padding: 2mm; vertical-align: top;">1</td>
+                <td style="padding: 0; vertical-align: top;">
+                    <table class="nested-table">
+                        <tr><td style="width: 40%; font-weight: bold;">Nama (Huruf Besar)</td><td style="width: 2%;">:</td><td style="text-transform: uppercase;">${namaKetua}</td></tr>
+                        <tr><td style="font-weight: bold;">No. Kad Pengenalan</td><td>:</td><td>${noKpKetua}</td></tr>
+                        <!-- KEMASKINI: padding-bottom: 12mm DIBUANG SUPAYA RUANG AUTO -->
+                        <tr><td style="font-weight: bold; vertical-align: top;">Alamat</td><td style="vertical-align: top;">:</td><td style="text-transform: capitalize;">${alamatKetua}</td></tr>
+                        <tr><td style="font-weight: bold;">No. Telefon</td><td>:</td><td>${telKetua}</td></tr>
+                        <tr><td style="font-weight: bold;">Tarikh Mula Kerja</td><td>:</td><td>${tarikhMula}</td></tr>
+                        <tr><td style="font-weight: bold;">Tarikh Akhir Kerja</td><td>:</td><td>${tarikhAkhir}</td></tr>
+                        <tr><td style="font-weight: bold;">Jawatan Terakhir</td><td>:</td><td style="text-transform: capitalize;">${jawatan}</td></tr>
+                        <tr><td style="font-weight: bold;">Kadar Gaji</td><td>:</td><td>RM${gaji} sebulan</td></tr>
+                    </table>
+                </td>
+                <td colspan="2" style="padding: 4mm 2mm; text-align: center;">Tiada Tuntutan Direkodkan</td>
+                <td style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
+                    {JUMLAH_BESAR}
+                </td>
+                <td style="position: relative; padding: 2mm; vertical-align: top;">
+                    <div style="font-size: 10px; text-align: justify; margin-bottom: 25mm;">Saya dengan ini mengaku dan bersumpah bahawa segala maklumat yang diberikan ini adalah benar belaka.</div>
+                    <div class="sign-area">
+                        <div class="sign-line"></div>
+                        <div style="font-size: 11px;">Tandatangan</div>
+                    </div>
+                </td>
+            </tr>
+            `;
         }
 
         const jumlahBesarKetua = Number(jumlahKeseluruhanKetua).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        htmlTuntutanRows = htmlTuntutanRows.replace('{JUMLAH_BESAR}', jumlahBesarKetua);
 
         // 5. BINA REKA LETAK HTML
         const htmlG1 = `
@@ -3326,39 +3401,7 @@ function bukaPreviewPDF(jenisBorang) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style="text-align: center; padding: 2mm;">1</td>
-                            <td style="padding: 0;">
-                                <table class="nested-table">
-                                    <tr><td style="width: 40%; font-weight: bold;">Nama (Huruf Besar)</td><td style="width: 2%;">:</td><td style="text-transform: uppercase;">${namaKetua}</td></tr>
-                                    <tr><td style="font-weight: bold;">No. Kad Pengenalan</td><td>:</td><td>${noKpKetua}</td></tr>
-                                    <!-- Jarak padding-bottom: 12mm ditambah di sini untuk Alamat -->
-                                    <tr><td style="font-weight: bold; vertical-align: top; padding-bottom: 12mm;">Alamat</td><td style="vertical-align: top; padding-bottom: 12mm;">:</td><td style="text-transform: capitalize; padding-bottom: 12mm;">${alamatKetua}</td></tr>
-                                    <tr><td style="font-weight: bold;">No. Telefon</td><td>:</td><td>${telKetua}</td></tr>
-                                    <tr><td style="font-weight: bold;">Tarikh Mula Kerja</td><td>:</td><td>${tarikhMula}</td></tr>
-                                    <tr><td style="font-weight: bold;">Tarikh Akhir Kerja</td><td>:</td><td>${tarikhAkhir}</td></tr>
-                                    <tr><td style="font-weight: bold;">Jawatan Terakhir</td><td>:</td><td style="text-transform: capitalize;">${jawatan}</td></tr>
-                                    <tr><td style="font-weight: bold;">Kadar Gaji</td><td>:</td><td>RM${gaji} sebulan</td></tr>
-                                </table>
-                            </td>
-                            
-                            <td colspan="2" style="padding: 0; vertical-align: top;">
-                                <table style="width: 100%; border-collapse: collapse; height: 100%;">
-                                    ${htmlTuntutanRows}
-                                </table>
-                            </td>
-                            
-                            <td style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
-                                ${jumlahBesarKetua}
-                            </td>
-                            <td style="position: relative; padding: 2mm;">
-                                <div style="font-size: 10px; text-align: justify; margin-bottom: 25mm;">Saya dengan ini mengaku dan bersumpah bahawa segala maklumat yang diberikan ini adalah benar belaka.</div>
-                                <div class="sign-area">
-                                    <div class="sign-line"></div>
-                                    <div style="font-size: 11px;">Tandatangan</div>
-                                </div>
-                            </td>
-                        </tr>
+                        ${htmlTuntutanRows}
                     </tbody>
                 </table>
 
