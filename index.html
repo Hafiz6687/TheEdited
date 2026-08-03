@@ -2302,14 +2302,13 @@ function janaKenyataanAwal() {
             }
         }
 
-        function pergiKeTabBorang(tabId) {
-            if (tabId === 'tab1') { bukaMaklumatPerkhidmatanDalaman(); }
+function pergiKeTabBorang(tabId) {
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(t => t.classList.remove('active'));
             if(tabId === 'tab1') tabs[0].classList.add('active');
             if(tabId === 'tab2') tabs[1].classList.add('active');
             if(tabId === 'tab3') tabs[2].classList.add('active');
-            
+                 
             document.getElementById('tab1').style.display = 'none';
             document.getElementById('tab2').style.display = 'none';
             document.getElementById('tab3').style.display = 'none';
@@ -2325,15 +2324,14 @@ function janaKenyataanAwal() {
             document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' }); 
         }
 
-        function bukaTab(tabId, elemenTab) {
-            if (tabId === 'tab1') { bukaMaklumatPerkhidmatanDalaman(); }
+function bukaTab(tabId, elemenTab) {
             document.getElementById('tab1').style.display = 'none';
             document.getElementById('tab2').style.display = 'none';
             document.getElementById('tab3').style.display = 'none';
             
             const senaraiTab = document.querySelectorAll('.tab');
             senaraiTab.forEach(tab => tab.classList.remove('active'));
-            
+                     
             document.getElementById(tabId).style.display = 'grid'; 
             elemenTab.classList.add('active');
 
