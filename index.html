@@ -2907,6 +2907,14 @@ function daftarKesSistem() {
             let noKesAsal = document.getElementById('noKes').value;
             let noKesBersih = noKesAsal.split('<br>')[0].trim();
 
+            // --- KOD TAMBAHAN: SEMAKAN NO. KES KOSONG ---
+            if (noKesBersih === "") {
+                alert("Sila pastikan No. Kes telah diisi dengan betul sebelum mendaftar kes.");
+                document.getElementById('noKes').focus();
+                return; // Hentikan sistem dari terus mendaftar
+            }
+            // --------------------------------------------
+
             const isMajikan = document.getElementById('majikan').checked;
             
             let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
@@ -2939,9 +2947,9 @@ function daftarKesSistem() {
             };
 
             // 2. SEMAKAN: Cari jika no. kes ini asalnya adalah Draf
-            let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.startsWith(noKesBersih));
+            let indeksSediaAda = (noKesBersih !== "") ? memoriSenaraiKes.findIndex(kes => kes.noKes.split('<br>')[0].trim() === noKesBersih) : -1;
 
-if (indeksSediaAda !== -1) {
+            if (indeksSediaAda !== -1) {
                 // Jika jumpa, GANTI / UPDATE rekod draf tersebut dengan rekod rasmi (Tag kuning Draf akan hilang)
                 memoriSenaraiKes[indeksSediaAda] = rekodRasmi;
             } else {
@@ -3683,65 +3691,73 @@ function bukaPreview() {
             daftarKesSistem(); // Jalankan pendaftaran dan terus ke senarai kes (Alert "Tahniah" ada dalam fungsi ini)
         }
 // --- FUNGSI SIMPAN DRAF ---
-function simpanDrafSistem() {
-    // 1. Ambil no. kes dan pastikan ia tiada tag HTML (buang tag jika ada)
-    let noKesAsal = document.getElementById('noKes').value;
-    let noKesBersih = noKesAsal.split('<br>')[0].trim();
+        function simpanDrafSistem() {
+            // 1. Ambil no. kes dan pastikan ia tiada tag HTML (buang tag jika ada)
+            let noKesAsal = document.getElementById('noKes').value;
+            let noKesBersih = noKesAsal.split('<br>')[0].trim();
 
-    const isMajikan = document.getElementById('majikan').checked;
-    
-    let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
-    let namaDefendanRaw = document.getElementById('namaDefendan').value || '(Nama tidak diisi)';
-    let namaPengaduFinal, namaDefendanFinal;
+            // --- KOD TAMBAHAN: SEMAKAN NO. KES KOSONG ---
+            if (noKesBersih === "") {
+                alert("Sila pastikan No. Kes telah diisi dengan betul sebelum menyimpan draf.");
+                document.getElementById('noKes').focus();
+                return; // Hentikan sistem dari terus menyimpan
+            }
+            // --------------------------------------------
 
-    if (isMajikan) {
-        namaPengaduFinal = namaDefendanRaw;
-        const jenisDef = document.getElementById('jenisDaftarDefendan').value;
-        if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaPengaduFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
-        namaDefendanFinal = namaPengaduRaw;
-    } else {
-        namaPengaduFinal = namaPengaduRaw;
-        namaDefendanFinal = namaDefendanRaw;
-        const jenisDef = document.getElementById('jenisDaftarDefendan').value;
-        if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaDefendanFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
-    }
+            const isMajikan = document.getElementById('majikan').checked;
+            
+            let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
+            let namaDefendanRaw = document.getElementById('namaDefendan').value || '(Nama tidak diisi)';
+            let namaPengaduFinal, namaDefendanFinal;
 
-    const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
-    const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
-    const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
+            if (isMajikan) {
+                namaPengaduFinal = namaDefendanRaw;
+                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaPengaduFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+                namaDefendanFinal = namaPengaduRaw;
+            } else {
+                namaPengaduFinal = namaPengaduRaw;
+                namaDefendanFinal = namaDefendanRaw;
+                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaDefendanFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+            }
 
-    // 2. Bina No. Kes beserta Label Draf HTML
-    const tagDraf = "<br><span style='background-color: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700;'>DRAF</span>";
-    const noKesDenganTag = noKesBersih + tagDraf;
+            const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
+            const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
+            const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
 
-    // 3. SEMAKAN: Cari jika noKesBersih sudah wujud dalam senarai (Elak Duplicate)
-    let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.startsWith(noKesBersih));
+            // 2. Bina No. Kes beserta Label Draf HTML
+            const tagDraf = "<br><span style='background-color: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700;'>DRAF</span>";
+            const noKesDenganTag = noKesBersih + tagDraf;
 
-    if (indeksSediaAda !== -1) {
-        // Jika sudah ada, UPDATE/KEMASKINI data
-        memoriSenaraiKes[indeksSediaAda] = {
-            noKes: noKesDenganTag,
-            namaPengadu: namaPengaduFinal,
-            namaDefendan: namaDefendanFinal,
-            jenisAduan: jenisAduan,
-            tarikh: tarikhHariIni
-        };
-    } else {
-        // Jika tiada, TAMBAH sebagai rekod baharu
-        memoriSenaraiKes.unshift({ 
-            noKes: noKesDenganTag, 
-            namaPengadu: namaPengaduFinal, 
-            namaDefendan: namaDefendanFinal, 
-            jenisAduan: jenisAduan, 
-            tarikh: tarikhHariIni 
-        });
-    }
-    
-    alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
-    
-    tukarView('senarai');
-    pergiKeTabBorang('tab1'); 
-}
+            // 3. SEMAKAN: Cari jika noKesBersih sudah wujud dalam senarai (Elak Duplicate)
+            let indeksSediaAda = (noKesBersih !== "") ? memoriSenaraiKes.findIndex(kes => kes.noKes.split('<br>')[0].trim() === noKesBersih) : -1;
+
+            if (indeksSediaAda !== -1) {
+                // Jika sudah ada, UPDATE/KEMASKINI data
+                memoriSenaraiKes[indeksSediaAda] = {
+                    noKes: noKesDenganTag,
+                    namaPengadu: namaPengaduFinal,
+                    namaDefendan: namaDefendanFinal,
+                    jenisAduan: jenisAduan,
+                    tarikh: tarikhHariIni
+                };
+            } else {
+                // Jika tiada, TAMBAH sebagai rekod baharu
+                memoriSenaraiKes.unshift({ 
+                    noKes: noKesDenganTag, 
+                    namaPengadu: namaPengaduFinal, 
+                    namaDefendan: namaDefendanFinal, 
+                    jenisAduan: jenisAduan, 
+                    tarikh: tarikhHariIni 
+                });
+            }
+            
+            alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
+            
+            tukarView('senarai');
+            pergiKeTabBorang('tab1'); 
+        }
 // --- FUNGSI batalPemfailan TELAH DIKEMASKINI ---
         function batalPemfailan() {
             if (confirm("Adakah anda pasti mahu membatalkan pemfailan kes ini? Semua maklumat akan ditetapkan semula.")) {
