@@ -3057,90 +3057,124 @@ function bukaPreviewPDF(jenisBorang) {
     if (jenisBorang === 'G1 Ketua') {
         console.log("Menjana maklumat pengadu untuk G1 Ketua...");
 
-        // 1. AMBIL DATA DARI BORANG MAKLUMAT PENGADU (Dinamik)
-        const namaKetua = document.getElementById('namaPengadu') && document.getElementById('namaPengadu').value ? document.getElementById('namaPengadu').value : 'SITI RAFIDAH BINTI SARIJO';
-        const noKpKetua = document.getElementById('noPendPengadu') && document.getElementById('noPendPengadu').value ? document.getElementById('noPendPengadu').value : '920301-01-5778';
-        const telKetua = document.getElementById('hpPengadu') && document.getElementById('hpPengadu').value ? document.getElementById('hpPengadu').value : '016-6866785';
+        // 1. EKSTRAK MAKLUMAT PENGADU (KETUA)
+        const namaKetua = document.getElementById('namaPengadu')?.value || '';
+        const noKpKetua = document.getElementById('noPendPengadu')?.value || '';
+        const telKetua = document.getElementById('hpPengadu')?.value || document.getElementById('telPengadu')?.value || '';
         
-        // Tarikh, Jawatan dan Gaji (Jika kosong, guna data contoh)
-        let tarikhMulaRaw = document.getElementById('tarikhMulaKerja') ? document.getElementById('tarikhMulaKerja').value : '';
-        const tarikhMula = tarikhMulaRaw ? new Date(tarikhMulaRaw).toLocaleDateString('ms-MY') : '1/9/2013';
-        const jawatan = document.getElementById('jawatanPengadu') && document.getElementById('jawatanPengadu').value ? document.getElementById('jawatanPengadu').value : 'Jurujual';
-        const gaji = document.getElementById('gajiPokokPengadu') && document.getElementById('gajiPokokPengadu').value ? document.getElementById('gajiPokokPengadu').value : '2,050.00';
+        // Ekstrak Alamat Pengadu
+        const alamatKetua = [
+            document.getElementById('alamatPengadu1')?.value,
+            document.getElementById('alamatPengadu2')?.value,
+            document.getElementById('alamatPengadu3')?.value,
+            [document.getElementById('poskodPengadu')?.value, document.getElementById('bandarPengadu')?.value].filter(Boolean).join(' '),
+            document.getElementById('negeriPengadu')?.value
+        ].filter(Boolean).join(', ') || '';
 
-        // 2. BINA REKA LETAK (LAYOUT) DOKUMEN G1 BARU (LANDSCAPE + GABUNG KOLUM + TIADA GARIS MELINTANG)
+        let tarikhMulaRaw = document.getElementById('tarikhMulaKerja')?.value;
+        const tarikhMula = tarikhMulaRaw ? new Date(tarikhMulaRaw).toLocaleDateString('ms-MY') : '';
+
+        let tarikhAkhirRaw = document.getElementById('tarikhAkhirKerja')?.value;
+        const tarikhAkhir = tarikhAkhirRaw ? new Date(tarikhAkhirRaw).toLocaleDateString('ms-MY') : '';
+
+        const jawatan = document.getElementById('jawatanPengadu')?.value || '';
+        const gajiRaw = document.getElementById('gajiPokokPengadu')?.value;
+        const gaji = gajiRaw ? Number(gajiRaw.replace(/,/g, '')).toLocaleString('en-MY', { minimumFractionDigits: 2 }) : '';
+
+        // 2. EKSTRAK BILANGAN PENGADU DIWAKILI (Bilangan - 1)
+        const bilPengaduRaw = parseInt(document.getElementById('bilanganPengadu')?.value) || 1;
+        const bilDiwakili = bilPengaduRaw > 1 ? bilPengaduRaw - 1 : 0;
+
+        // 3. EKSTRAK MAKLUMAT PIHAK KENA TUNTUT (DEFENDAN)
+        const c_nama = document.getElementById('namaDefendan')?.value?.toUpperCase() || '';
+        const c_jenisPend = document.getElementById('jenisDaftarDefendan')?.value;
+        const c_noPend = document.getElementById('noPendDefendan')?.value?.toUpperCase() || '';
+        const c_namaPemilik = document.getElementById('namaPemilikDefendan')?.value?.toUpperCase() || '';
+        const c_kpPemilik = document.getElementById('kpPemilikDefendan')?.value || '';
+
+        let teksPihakKenaTuntut = c_nama;
+        if (c_jenisPend === 'MyKad') {
+            if (c_noPend) teksPihakKenaTuntut += ` ${c_noPend}`;
+        } else if (c_jenisPend === 'SSM (Enterprise)') {
+            if (c_noPend) teksPihakKenaTuntut += ` ${c_noPend}`;
+            if (c_namaPemilik && c_kpPemilik) teksPihakKenaTuntut += ` yang dimiliki ${c_namaPemilik} ${c_kpPemilik}`;
+            else if (c_namaPemilik) teksPihakKenaTuntut += ` yang dimiliki ${c_namaPemilik}`;
+        } else {
+            if (c_noPend) teksPihakKenaTuntut += ` ${c_noPend}`;
+        }
+
+        // Ekstrak Alamat Defendan
+        const alamatDefendan = [
+            document.getElementById('alamatDefendan1')?.value,
+            document.getElementById('alamatDefendan2')?.value,
+            document.getElementById('alamatDefendan3')?.value,
+            [document.getElementById('poskodDefendan')?.value, document.getElementById('bandarDefendan')?.value].filter(Boolean).join(' '),
+            document.getElementById('negeriDefendan')?.value
+        ].filter(Boolean).join(', ').toUpperCase() || '';
+
+        // 4. BINA JADUAL TUNTUTAN DARI MEMORI & KIRA JUMLAH BESAR
+        let htmlTuntutanRows = '';
+        let jumlahKeseluruhanKetua = 0;
+
+        if (memoriTuntutanKetua && memoriTuntutanKetua.length > 0) {
+            memoriTuntutanKetua.forEach((item, index) => {
+                const jumlahNum = parseFloat(item.jumlah);
+                jumlahKeseluruhanKetua += isNaN(jumlahNum) ? 0 : jumlahNum;
+                const jumlahCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                let ket = item.keterangan;
+                if(!ket.startsWith('(')) ket = `(${ket}`;
+                if(!ket.endsWith(')')) ket = `${ket})`;
+
+                const borderBottom = (index === memoriTuntutanKetua.length - 1) ? 'none' : '1px solid #000000';
+
+                htmlTuntutanRows += `
+                    <tr>
+                        <td style="width: 70%; padding: 4mm 2mm; border: none; border-right: 1px solid #000000; border-bottom: ${borderBottom}; vertical-align: top;">
+                            ${item.jenis}<br><em>${ket}</em>
+                        </td>
+                        <td style="width: 30%; padding: 4mm 2mm; text-align: right; border: none; border-bottom: ${borderBottom}; vertical-align: top;">
+                            ${jumlahCantik}
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            htmlTuntutanRows = `<tr><td colspan="2" style="padding: 4mm 2mm; text-align: center; border: none;">Tiada Tuntutan Direkodkan</td></tr>`;
+        }
+
+        const jumlahBesarKetua = Number(jumlahKeseluruhanKetua).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // 5. BINA REKA LETAK HTML
         const htmlG1 = `
             <style>
-                /* Setup saiz kertas cetakan ke Landscape */
                 @page { size: A4 landscape; margin: 15mm; }
-                
-                /* CSS Khas untuk paparan kertas G1 di skrin */
                 .g1-kertas {
-                    width: 297mm;
-                    min-height: 210mm;
-                    background-color: #ffffff;
-                    border: 1px solid #000000; 
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-                    padding: 15mm;
-                    margin: 0 auto;
-                    font-family: Arial, Helvetica, sans-serif;
-                    color: #000000;
-                    box-sizing: border-box;
-                    line-height: 1.4;
+                    width: 297mm; min-height: 210mm; background-color: #ffffff;
+                    border: 1px solid #000000; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                    padding: 15mm; margin: 0 auto; font-family: Arial, Helvetica, sans-serif;
+                    color: #000000; box-sizing: border-box; line-height: 1.4;
                 }
-                .g1-header {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8mm;
-                    font-size: 12px;
-                    font-weight: bold;
-                }
-                .g1-title {
-                    font-size: 14px;
-                    font-weight: bold;
-                    text-align: center;
-                    text-transform: uppercase;
-                    text-decoration: underline;
-                    margin-bottom: 8mm;
-                }
-                .g1-desc {
-                    font-size: 12px;
-                    text-align: justify;
-                    margin-bottom: 6mm;
-                }
-                .g1-desc p { margin-bottom: 4mm; }
-                .g1-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 8mm;
-                }
-                .g1-table th, .g1-table td {
-                    border: 1px solid #000000;
-                    padding: 2mm;
-                    font-size: 11px;
-                    vertical-align: top;
-                }
-                .g1-table th { text-align: center; font-weight: bold; vertical-align: middle; }
+                .g1-header { display: flex; justify-content: space-between; margin-bottom: 8mm; font-size: 12px; font-weight: bold; }
+                .g1-title { font-size: 14px; font-weight: bold; text-align: center; text-transform: uppercase; text-decoration: underline; margin-bottom: 8mm; }
+                .g1-desc { font-size: 12px; text-align: justify; margin-bottom: 2mm; } /* Single spacing distance */
+                .g1-table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
+                .g1-table th, .g1-table td { border: 1px solid #000000; font-size: 11px; vertical-align: top; }
                 
-                /* Class utiliti untuk membuang garisan melintang di dalam jadual tuntutan */
-                .no-border-bottom { border-bottom: none !important; }
-                .no-border-top { border-top: none !important; }
-                .no-border-y { border-top: none !important; border-bottom: none !important; }
-
+                /* Header jadual spacing 3pt before & after */
+                .g1-table th { text-align: center; font-weight: bold; vertical-align: middle; padding: 3pt 2mm; }
+                
                 .nested-table { width: 100%; border-collapse: collapse; }
-                .nested-table td { border: none !important; padding: 1.5mm; font-size: 10px; }
+                .nested-table td { border: none !important; padding: 1.5mm; font-size: 11px; }
                 .sign-area { text-align: center; margin-top: 15mm; }
                 .sign-line { border-top: 1px solid #000000; width: 80%; margin: 0 auto 2mm auto; }
-                .g1-notes { font-size: 11px; margin-top: 5mm; }
-                .g1-notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm 5mm; margin-top: 4mm; }
+                
+                .g1-notes { font-size: 11px; margin-top: 5mm; line-height: 1.2; } /* Single spacing for notes */
+                .g1-notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2mm 5mm; margin-top: 2mm; }
                 
                 @media print {
                     .g1-kertas { width: 100%; min-height: auto; margin: 0; padding: 0; border: none; box-shadow: none; }
                     .g1-table th, .g1-table td { border: 1px solid #000000 !important; }
-                    /* Pastikan utiliti tiada border melintang kekal semasa cetakan (print) */
-                    .g1-table td.no-border-bottom { border-bottom: none !important; }
-                    .g1-table td.no-border-top { border-top: none !important; }
-                    .g1-table td.no-border-y { border-top: none !important; border-bottom: none !important; }
                     * { color: #000000 !important; }
                 }
             </style>
@@ -3155,8 +3189,8 @@ function bukaPreviewPDF(jenisBorang) {
                 <div class="g1-title">SENARAI TUNTUTAN BERSAMA DAN PERSETUJUAN PELANTIKAN KETUA</div>
 
                 <div class="g1-desc">
-                    <p>Saya yang menandatangani di bawah ini dengan ini bersetuju dilantik mewakili 1 yang lain sebagai wakil untuk memfailkan dan menguruskan tuntutan terhadap Pihak Kena Tuntut MR HAPPY SDN. BHD. 201101018067 (946203-W) yang beralamat di NO. 24, JALAN ROTAN CUCUR</p>
-                    <p>Tuntutan dan butir-butir saya / kami adalah seperti berikut :</p>
+                    <p style="margin-bottom: 4mm;">Saya yang menandatangani di bawah ini dengan ini bersetuju dilantik mewakili <strong>${bilDiwakili} yang lain</strong> sebagai wakil untuk memfailkan dan menguruskan tuntutan terhadap Pihak Kena Tuntut <strong>${teksPihakKenaTuntut}</strong> yang beralamat di <strong>${alamatDefendan}</strong>.</p>
+                    <p style="margin-bottom: 0;">Tuntutan dan butir-butir saya / kami adalah seperti berikut :</p>
                 </div>
 
                 <table class="g1-table">
@@ -3164,37 +3198,41 @@ function bukaPreviewPDF(jenisBorang) {
                         <tr>
                             <th rowspan="2" style="width: 4%;">BIL</th>
                             <th rowspan="2" style="width: 35%;">BUTIRAN PENGADU</th>
-                            <!-- Colspan ditukar dari 3 kepada 2 -->
                             <th colspan="2" style="width: 34%;">BUTIRAN TUNTUTAN</th>
                             <th rowspan="2" style="width: 10%;">JUMLAH BESAR<br>(RM)</th>
                             <th rowspan="2" style="width: 17%;">TANDATANGAN PENGADU</th>
                         </tr>
                         <tr>
-                            <!-- Tajuk telah digabungkan -->
-                            <th style="width: 24%;">PERKARA / TEMPOH (Keterangan Tuntutan)</th>
+                            <th style="width: 24%;">PERKARA / TEMPOH<br><span style="font-weight: normal; font-style: italic;">(Keterangan Tuntutan)</span></th>
                             <th style="width: 10%;">AMAUN (RM)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td rowspan="3" style="text-align: center;">1</td>
-                            <td rowspan="3" style="padding: 0;">
+                            <td style="text-align: center; padding: 2mm;">1</td>
+                            <td style="padding: 0;">
                                 <table class="nested-table">
-                                    <tr><td style="width: 45%;">Nama (Huruf Besar)</td><td>: <span style="text-transform: uppercase;">${namaKetua}</span></td></tr>
-                                    <tr><td>No. Kad Pengenalan</td><td>: ${noKpKetua}</td></tr>
-                                    <tr><td>Alamat</td><td>: </td></tr>
-                                    <tr><td>No. Telefon</td><td>: ${telKetua}</td></tr>
-                                    <tr><td>Tarikh Mula Kerja</td><td>: ${tarikhMula}</td></tr>
-                                    <tr><td>Tarikh Akhir Kerja</td><td>: 6/30/2026</td></tr>
-                                    <tr><td>Jawatan Terakhir</td><td>: <span style="text-transform: capitalize;">${jawatan}</span></td></tr>
-                                    <tr><td>Kadar Gaji</td><td>: RM${gaji} sebulan</td></tr>
+                                    <tr><td style="width: 40%; font-weight: bold;">Nama (Huruf Besar)</td><td style="width: 2%;">:</td><td style="text-transform: uppercase;">${namaKetua}</td></tr>
+                                    <tr><td style="font-weight: bold;">No. Kad Pengenalan</td><td>:</td><td>${noKpKetua}</td></tr>
+                                    <tr><td style="font-weight: bold;">Alamat</td><td>:</td><td style="text-transform: capitalize;">${alamatKetua}</td></tr>
+                                    <tr><td style="font-weight: bold;">No. Telefon</td><td>:</td><td>${telKetua}</td></tr>
+                                    <tr><td style="font-weight: bold;">Tarikh Mula Kerja</td><td>:</td><td>${tarikhMula}</td></tr>
+                                    <tr><td style="font-weight: bold;">Tarikh Akhir Kerja</td><td>:</td><td>${tarikhAkhir}</td></tr>
+                                    <tr><td style="font-weight: bold;">Jawatan Terakhir</td><td>:</td><td style="text-transform: capitalize;">${jawatan}</td></tr>
+                                    <tr><td style="font-weight: bold;">Kadar Gaji</td><td>:</td><td>RM${gaji} sebulan</td></tr>
                                 </table>
                             </td>
-                            <!-- Utiliti 'no-border-bottom' ditambah untuk hilangkan garis -->
-                            <td class="no-border-bottom">Faedah Penamatan</td>
-                            <td class="no-border-bottom" style="text-align: right;">21,280.82</td>
-                            <td rowspan="3"></td>
-                            <td rowspan="3" style="position: relative;">
+                            
+                            <td colspan="2" style="padding: 0;">
+                                <table style="width: 100%; border-collapse: collapse; height: 100%;">
+                                    ${htmlTuntutanRows}
+                                </table>
+                            </td>
+                            
+                            <td style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
+                                ${jumlahBesarKetua}
+                            </td>
+                            <td style="position: relative; padding: 2mm;">
                                 <div style="font-size: 10px; text-align: justify; margin-bottom: 25mm;">Saya dengan ini mengaku dan bersumpah bahawa segala maklumat yang diberikan ini adalah benar belaka.</div>
                                 <div class="sign-area">
                                     <div class="sign-line"></div>
@@ -3202,51 +3240,42 @@ function bukaPreviewPDF(jenisBorang) {
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <!-- Utiliti 'no-border-y' membuang garis atas dan bawah -->
-                            <td class="no-border-y">Gaji Ganti Notis</td>
-                            <td class="no-border-y" style="text-align: right;">2,628.01</td>
-                        </tr>
-                        <tr>
-                            <!-- Utiliti 'no-border-top' membuang garis atas -->
-                            <td class="no-border-top">Bayaran Baki Cuti Tahunan</td>
-                            <td class="no-border-top" style="text-align: right;">826.92</td>
-                        </tr>
                     </tbody>
                 </table>
 
                 <div class="g1-notes">
-                    <strong>Nota:<br>Jenis-Jenis Tuntutan</strong>
+                    <strong>Nota:</strong><br>
+                    <strong>Jenis-Jenis Tuntutan</strong>
                     <div class="g1-notes-grid">
                         <div>a. Baki Gaji/Baki Gaji Minimum</div>
                         <div>b. Gaji Ganti Notis</div>
                         <div>c. Kerja Lebih Masa</div>
                         <div>d. Faedah Penamatan</div>
-                        <div style="grid-column: span 2;">e. Cuti (*Tahunan/Sakit/Bersalin/Paterniti/Kelepasan Am/Cuti Rehat)</div>
+                        <div>e. Cuti (*Tahunan/Sakit/Bersalin/Paterniti/Kelepasan Am/Cuti Rehat)</div>
                         <div>f. Lain-lain (Sila nyatakan)</div>
                     </div>
                 </div>
             </div>
         `;
 
-        // 3. SETKAN SUIS MOD CETAK 
+        // 6. SETKAN SUIS MOD CETAK 
         modCetakSemasa = jenisBorang;
         
-        // 4. MASUKKAN HTML KE DALAM ID 'previewContent' & 'printArea'
+        // 7. MASUKKAN HTML KE DALAM ID
         const kawasanPreview = document.getElementById('previewContent');
         if (kawasanPreview) kawasanPreview.innerHTML = htmlG1;
 
         const kawasanCetak = document.getElementById('printArea');
         if (kawasanCetak) kawasanCetak.innerHTML = htmlG1;
 
-        // 5. BUKA SKRIN PREVIEW MENGGUNAKAN ID MODAL
+        // 8. BUKA SKRIN PREVIEW
         document.getElementById('modalPreview').style.display = 'flex';
         
-        // 6. KAWALAN MENU CETAK DALAM DROPDOWN
+        // 9. KAWALAN MENU CETAK DALAM DROPDOWN
         document.getElementById('menuCetakAkuan').style.display = 'none';
         document.getElementById('menuCetakKenyataan').style.display = 'none';
         document.getElementById('menuDaftar').style.display = 'none';
-        document.getElementById('menuCetakG1').style.display = 'flex'; // <--- TAMPILKAN CETAK G1
+        document.getElementById('menuCetakG1').style.display = 'flex';
     } 
     else if (jenisBorang === 'G1 Borang') {
         alert("Fungsi reka letak untuk G1 Borang akan dibina kemudian.");
