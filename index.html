@@ -1348,7 +1348,7 @@ Portal rasmi : jtksm.mohr.gov.my
             tab1.addEventListener('input', function(e) {
                 const el = e.target;
                 if (el.tagName === 'INPUT' && el.type === 'text') {
-                    const abaikan = ['noPendPengadu', 'noPendDefendan', 'noKes', 'telPengadu', 'hpPengadu', 'telDefendan', 'hpDefendan', 'teksWaktuTidakTetap', 'teksHariTidakTetap', 'kpPemilikDefendan', 'namaTempatKerja', 'alamatKerja1', 'alamatKerja2', 'alamatKerja3', 'jenisTuntutanLain', 'noMyKadWakil'];
+                    const abaikan = ['noPendPengadu', 'noPendDefendan', 'noKes', 'telPengadu', 'hpPengadu', 'telDefendan', 'hpDefendan', 'teksWaktuTidakTetap', 'teksHariTidakTetap', 'kpPemilikDefendan', 'jenisTuntutanLain', 'noMyKadWakil'];
                     if (abaikan.includes(el.id) || el.classList.contains('input-elaun-jenis') || el.classList.contains('input-elaun-jumlah')) return;
                     
                     let start = el.selectionStart;
