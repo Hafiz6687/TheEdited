@@ -3552,24 +3552,50 @@ function bukaPreview() {
             daftarKesSistem(); // Jalankan pendaftaran dan terus ke senarai kes (Alert "Tahniah" ada dalam fungsi ini)
         }
 
-        // --- FUNGSI batalPemfailan TELAH DITAMBAH DI SINI ---
+// --- FUNGSI batalPemfailan TELAH DIKEMASKINI ---
         function batalPemfailan() {
             if (confirm("Adakah anda pasti mahu membatalkan pemfailan kes ini? Semua maklumat akan ditetapkan semula.")) {
                 
-                // Kosongkan memori sementara
+                // 1. Kosongkan memori jadual tuntutan
                 memoriTuntutan = [];
                 memoriTuntutanKetua = [];
                 renderJadualTuntutan();
                 
-                // Tutup preview sekiranya sedang dibuka
+                // 2. Kosongkan semua ruangan Input, Textarea, dan Select di dalam borang pendaftaran
+                const bekasBorang = document.getElementById('viewPendaftaranKes');
+                if (bekasBorang) {
+                    // Kosongkan semua input teks, tarikh, nombor, masa dan textarea
+                    const inputs = bekasBorang.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], input[type="email"], input[type="time"], textarea');
+                    inputs.forEach(input => input.value = '');
+                    
+                    // Reset semua dropdown (select) kembali ke pilihan pertama (-Sila Pilih-)
+                    const selects = bekasBorang.querySelectorAll('select');
+                    selects.forEach(select => select.selectedIndex = 0);
+                    
+                    // Buang tanda (tick) pada checkbox
+                    const checkboxes = bekasBorang.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => {
+                        // Jangan untick checkbox "Majikan adalah pengadu" jika anda mahu ia kekal default, 
+                        // tetapi untuk reset bersih, kita untick semua.
+                        cb.checked = false; 
+                    });
+                }
+
+                // 3. Kembalikan borang kepada keadaan lalai (default) melalui fungsi sedia ada
+                tukarPeranan(); // Memastikan susun atur pengadu/defendan kembali normal
+                kawalJenisDaftarPengadu();
+                kawalJenisDaftarDefendan();
+                
+                // 4. Tutup preview sekiranya sedang dibuka
                 document.getElementById('modalPreview').style.display = 'none';
                 const actionMenu = document.getElementById('actionMenu');
                 if(actionMenu) actionMenu.classList.remove('show');
                 
                 alert("Pemfailan kes telah berjaya dibatalkan.");
                 
-                // Kembali ke senarai utama
+                // 5. Kembali ke senarai utama dan pastikan Tab Borang kembali ke Tab 1
                 tukarView('senarai');
+                pergiKeTabBorang('tab1');
             }
         }
 // ==========================================
