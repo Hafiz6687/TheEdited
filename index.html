@@ -2173,8 +2173,8 @@ function janaKenyataanAwal() {
                 }
 
                 // AYAT TEMPAT KERJA UNTUK PEKERJA (INDIVIDU/BERKUMPULAN)
-                let ayatTempatKerja = alamatBerbeza ? `Tempat pekerjaan defendan di ${tempatKerja}.` : `Tempat pekerjaan saya di ${tempatKerja}.`;
-
+                let ayatTempatKerja = `Tempat pekerjaan saya di ${tempatKerja}.`;
+                
                 const p1 = `${ayatDefendan} bermula pada ${tarikhMula}. Jawatan terakhir saya sebagai ${jawatan}. Gaji pokok terakhir saya ialah RM${gaji}. ${ayatElaun} ${ayatTempatKerja}`;
                 const rKontrak = document.querySelector('input[name="adaKontrak"]:checked');
                 const kontrak = rKontrak ? rKontrak.value : '';
