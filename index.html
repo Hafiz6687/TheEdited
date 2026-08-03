@@ -659,9 +659,9 @@ Portal rasmi : jtksm.mohr.gov.my
                 </div>
             </div>
 
-            <!-- BAHAGIAN 4: Penetapan Tarikh Sebutan Kes -->
-            <div class="card full-width">
-                <div class="card-header">Penetapan Tarikh Sebutan Kes</div>
+           <!-- BAHAGIAN 4: Penetapan Tarikh Sebutan Kes -->
+<div class="card full-width" id="kad_sebutan_kes">
+    <div class="card-header">Penetapan Tarikh Sebutan Kes</div>
                 <div class="card-body">
                     <!-- Grid Responsive Custom (Baris Label dan Baris Input) -->
                     <div class="sebutan-grid-labels">
@@ -1654,10 +1654,22 @@ Portal rasmi : jtksm.mohr.gov.my
                 </tr>
             `;
 
-            // Reset Input Sebutan
+           // Reset Input Sebutan
             document.getElementById('mk_tarikh_sebutan').value = '';
             document.getElementById('mk_masa_sebutan').value = '';
             semakButangSebutan();
+
+            // LOGIK BAHARU: Sorok Bahagian Sebutan jika kes adalah DRAF
+            const isDraf = kes.noKes.includes('DRAF');
+            const kadSebutan = document.getElementById('kad_sebutan_kes');
+            
+            if (kadSebutan) {
+                if (isDraf) {
+                    kadSebutan.style.display = 'none'; // Sembunyikan terus
+                } else {
+                    kadSebutan.style.display = 'flex'; // Paparkan seperti biasa (style lalai '.card')
+                }
+            }
 
             // Setup Butang Kemaskini (Akan bawa kembali ke form)
             document.getElementById('btnEditRekodKes').onclick = function() {
