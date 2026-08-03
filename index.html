@@ -1281,7 +1281,7 @@ Portal rasmi : jtksm.mohr.gov.my
                             <button type="button" class="btn-terapung" style="background-color: #cbd5e1; color: #1e293b; border: none; font-weight: 700; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 10px 25px;" onclick="pergiKeTabBorang('tab2')">
                                 <span style="font-size: 1.2em; line-height: 1;">←</span> Kembali
                             </button>
-                            <button class="btn-save btn-simpan btn-terapung" style="background-color: var(--primary-blue); padding: 10px 20px;" onclick="alert('Maklumat draf telah disimpan.')">💾 Simpan</button>
+                            <button class="btn-save btn-simpan btn-terapung" style="background-color: var(--primary-blue); padding: 10px 20px;" onclick="simpanDrafSistem()">💾 Simpan Draf</button>
                         </div>
 
                     </div>
@@ -3551,7 +3551,47 @@ function bukaPreview() {
             document.getElementById('actionMenu').classList.remove('show');
             daftarKesSistem(); // Jalankan pendaftaran dan terus ke senarai kes (Alert "Tahniah" ada dalam fungsi ini)
         }
+// --- FUNGSI SIMPAN DRAF ---
+        function simpanDrafSistem() {
+            const noKes = document.getElementById('noKes').value;
+            const isMajikan = document.getElementById('majikan').checked;
+            
+            let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
+            let namaDefendanRaw = document.getElementById('namaDefendan').value || '(Nama tidak diisi)';
+            let namaPengaduFinal, namaDefendanFinal;
 
+            if (isMajikan) {
+                // Jika majikan, nama defendan (syarikat) sebenarnya adalah pengadu
+                namaPengaduFinal = namaDefendanRaw;
+                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaPengaduFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+                namaDefendanFinal = namaPengaduRaw;
+            } else {
+                namaPengaduFinal = namaPengaduRaw;
+                namaDefendanFinal = namaDefendanRaw;
+                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaDefendanFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+            }
+
+            const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
+            const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
+            const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
+
+            // Tambahkan ke dalam memori Senarai Tugasan dengan label [DRAF]
+            memoriSenaraiKes.unshift({ 
+                noKes: noKes + "<br><span style='background-color: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700;'>DRAF</span>", 
+                namaPengadu: namaPengaduFinal, 
+                namaDefendan: namaDefendanFinal, 
+                jenisAduan: jenisAduan, 
+                tarikh: tarikhHariIni 
+            });
+            
+            alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
+            
+            // Tutup borang dan kembali ke senarai tugasan
+            tukarView('senarai');
+            pergiKeTabBorang('tab1'); // Reset paparan ke tab pertama untuk kegunaan akan datang
+        }
 // --- FUNGSI batalPemfailan TELAH DIKEMASKINI ---
         function batalPemfailan() {
             if (confirm("Adakah anda pasti mahu membatalkan pemfailan kes ini? Semua maklumat akan ditetapkan semula.")) {
