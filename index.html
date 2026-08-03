@@ -2828,8 +2828,11 @@ function tukarPeranan() {
             });
         }
 
-        function daftarKesSistem() {
-            const noKes = document.getElementById('noKes').value;
+function daftarKesSistem() {
+            // 1. Ambil no. kes dan pastikan ia tiada sebarang tag HTML
+            let noKesAsal = document.getElementById('noKes').value;
+            let noKesBersih = noKesAsal.split('<br>')[0].trim();
+
             const isMajikan = document.getElementById('majikan').checked;
             
             let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
@@ -2852,8 +2855,28 @@ function tukarPeranan() {
             const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
             const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
 
-            memoriSenaraiKes.unshift({ noKes: noKes, namaPengadu: namaPengaduFinal, namaDefendan: namaDefendanFinal, jenisAduan: jenisAduan, tarikh: tarikhHariIni });
-            alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); tukarView('senarai');
+            // Bina objek data yang baharu/rasmi (tiada tag DRAF pada No. Kes)
+            const rekodRasmi = { 
+                noKes: noKesBersih, 
+                namaPengadu: namaPengaduFinal, 
+                namaDefendan: namaDefendanFinal, 
+                jenisAduan: jenisAduan, 
+                tarikh: tarikhHariIni 
+            };
+
+            // 2. SEMAKAN: Cari jika no. kes ini asalnya adalah Draf
+            let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.startsWith(noKesBersih));
+
+            if (indeksSediaAda !== -1) {
+                // Jika jumpa, GANTI / UPDATE rekod draf tersebut dengan rekod rasmi (Tag kuning Draf akan hilang)
+                memoriSenaraiKes[indeksSediaAda] = rekodRasmi;
+            } else {
+                // Jika tiada dalam senarai (daftar terus tanpa draf), tambah sebagai rekod baharu
+                memoriSenaraiKes.unshift(rekodRasmi);
+            }
+
+            alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
+            tukarView('senarai');
         }
 
         function hapusKesDidaftar(index) { if (confirm("Adakah anda pasti mahu memadam kes ini dari senarai tugasan?")) { memoriSenaraiKes.splice(index, 1); renderSenaraiTugas(); } }
