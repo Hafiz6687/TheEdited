@@ -1099,49 +1099,51 @@ Portal rasmi : jtksm.mohr.gov.my
     </div>
 </div>
                                 
-                            </div> <!-- TAMAT KANDUNGAN MAKLUMAT SYARIKAT -->
+</div> <!-- TAMAT KANDUNGAN MAKLUMAT SYARIKAT -->
                         </div> <!-- TAMAT WRAPPER MAKLUMAT SYARIKAT -->
                     </div>
                 </div>
 
 <!-- KAD 3: TUNTUTAN KETUA PENGADU (Hanya Muncul Jika Berkumpulan) -->
-                <div class="card full-width" id="kad3_ketua" style="order: 3; display: none; overflow: visible;">
-                    <div class="card-header">
-                        Maklumat Tuntutan Ketua Pengadu
-                        
-                       <!-- Butang Dropdown Action (G1) -->
-                        <div class="action-dropdown-container" style="margin-left: auto; position: relative;">
-                            <!-- Guna class="icon-btn" untuk bentuk bulat biru -->
-                            <button type="button" class="icon-btn" style="width: 36px; height: 36px; font-size: 20px; padding-bottom: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" onclick="document.getElementById('dropdownG1').classList.toggle('show')" title="Tindakan">
-                                ⋮
-                            </button>
-                         <div id="dropdownG1" class="dropdown-menu" style="top: 100%; right: 0; min-width: 160px; margin-top: 10px; font-weight: normal;">
-                                <a href="#" onclick="document.getElementById('dropdownG1').classList.remove('show'); bukaPreviewPDF('G1 Ketua');">📄 G1 Ketua</a>
-                                <a href="#" onclick="document.getElementById('dropdownG1').classList.remove('show'); bukaPreviewPDF('G1 Borang');">📄 G1 Borang</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Kandungan Ketua (Sembunyi sehingga Sektor & Jenis Perniagaan diisi) -->
-                    <div class="card-body" id="kandunganTuntutanKetua" style="display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                            <p class="note" style="margin: 0; color: var(--primary-blue);">* Sila isi sekurang-kurangnya SATU tuntutan untuk Ketua Pengadu</p>
-                            <button class="btn-add btn-terapung" style="margin: 0; background-color: #0284c7; white-space: nowrap;" onclick="bukaModalTuntutan('ketua')">+ Tambah Tuntutan Ketua</button>
-                        </div>
-                        
-                        <table id="jadualTuntutanKetua">
-                            <thead>
-                                <tr>
-                                    <th style="width: 5%;">Bil.</th><th style="width: 25%;">Jenis Tuntutan</th><th style="width: 35%;">Keterangan Tuntutan</th>
-                                    <th style="width: 15%;">Jumlah (RM)</th><th style="width: 10%;">Kemaskini</th><th style="width: 10%;">Hapus</th>
-                                </tr>
-                            </thead>
-                            <tbody><tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="card full-width" id="kad3_ketua" style="order: 3; display: none;"> <!-- TAG INI PERLU ADA DI SINI -->
+    <div class="card-header">
+        Maklumat Tuntutan Ketua Pengadu
+        
+        <!-- Butang Dropdown Action (G1) -->
+        <div class="action-dropdown-container" style="margin-left: auto; position: relative; display: flex; align-items: center;">
+            
+            <!-- Butang Segi Empat Tepat Kelabu Gelap -->
+            <button type="button" style="width: 46px; height: 30px; background-color: #334155; color: white; border: none; border-radius: 6px; font-size: 24px; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 0; padding-bottom: 6px; transition: all 0.2s ease;" onclick="document.getElementById('dropdownG1').classList.toggle('show')" title="Tindakan" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';">
+                ⋯
+            </button>
+            
+            <div id="dropdownG1" class="dropdown-menu" style="top: 100%; right: 0; min-width: 160px; margin-top: 10px; font-weight: normal;">
+                <a href="#" onclick="document.getElementById('dropdownG1').classList.remove('show'); bukaPreviewPDF('G1 Ketua');">📄 G1 Ketua</a>
+                <a href="#" onclick="document.getElementById('dropdownG1').classList.remove('show'); bukaPreviewPDF('G1 Borang');">📄 G1 Borang</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kandungan Ketua (Sembunyi sehingga Sektor & Jenis Perniagaan diisi) -->
+    <div class="card-body" id="kandunganTuntutanKetua" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <p class="note" style="margin: 0; color: var(--primary-blue);">* Sila isi sekurang-kurangnya SATU tuntutan untuk Ketua Pengadu</p>
+            <button class="btn-add btn-terapung" style="margin: 0; background-color: #0284c7; white-space: nowrap;" onclick="bukaModalTuntutan('ketua')">+ Tambah Tuntutan Ketua</button>
+        </div>
+        
+        <table id="jadualTuntutanKetua">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Bil.</th><th style="width: 25%;">Jenis Tuntutan</th><th style="width: 35%;">Keterangan Tuntutan</th>
+                    <th style="width: 15%;">Jumlah (RM)</th><th style="width: 10%;">Kemaskini</th><th style="width: 10%;">Hapus</th>
+                </tr>
+            </thead>
+            <tbody><tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr></tbody>
+        </table>
+    </div>
+</div> <!-- TAMAT KAD 3 KETUA -->
 
-                <!-- KAD 4: TUNTUTAN SEDIA ADA / KESELURUHAN -->
+<!-- KAD 4: TUNTUTAN SEDIA ADA / KESELURUHAN -->
                 <div class="card full-width" id="kad4_biasa" style="order: 4;">
                     <div class="card-header" id="tajukTuntutanSediaAda">Maklumat Tuntutan</div>
                     
