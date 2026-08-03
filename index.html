@@ -3252,7 +3252,7 @@ function bukaPreviewPDF(jenisBorang) {
 
                 if (index === 0) {
                     htmlTuntutanRows += `
-                    <tr>
+                    <tr style="height: 1px;">
                         <td rowspan="${rowSpan}" style="text-align: center; padding: 2mm; vertical-align: top;">1</td>
                         <td rowspan="${rowSpan}" style="padding: 0; vertical-align: top;">
                             <table class="nested-table">
@@ -3289,7 +3289,7 @@ function bukaPreviewPDF(jenisBorang) {
                     `;
                 } else {
                     htmlTuntutanRows += `
-                    <tr>
+                    <tr style="height: 1px;">
                         <td style="padding: 1.5pt 2mm; ${borderStyle} vertical-align: top;">
                             ${item.jenis}<br><em>${ket}</em>
                         </td>
