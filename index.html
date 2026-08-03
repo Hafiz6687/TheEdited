@@ -3474,7 +3474,7 @@ function bukaPreviewPDF(jenisBorang) {
             document.getElementById('negeriDefendan')?.value
         ].filter(Boolean).join(', ').toUpperCase() || '';
 
-        // 3. BINA REKA LETAK HTML
+// 3. BINA REKA LETAK HTML
         const htmlG1 = `
             <style>
                 @page { size: A4 landscape; margin: 15mm; }
@@ -3490,7 +3490,7 @@ function bukaPreviewPDF(jenisBorang) {
                 .g1-table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
                 .g1-table th, .g1-table td { border: 1px solid #000000; font-size: 11px; vertical-align: top; }
                 .g1-table th { text-align: center; font-weight: bold; vertical-align: middle; padding: 3pt 2mm; }
-                .nested-table { width: 100%; border-collapse: collapse; }
+                .nested-table { width: 100%; border-collapse: collapse; border: none !important; }
                 .nested-table td { border: none !important; padding: 2mm 1.5mm; font-size: 11px; } 
                 .sign-area { text-align: center; margin-top: 15mm; }
                 .sign-line { border-top: 1px solid #000000; width: 80%; margin: 0 auto 2mm auto; }
@@ -3533,12 +3533,12 @@ function bukaPreviewPDF(jenisBorang) {
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="text-align: center; padding: 2mm; height: 75mm;"></td>
-                            <td style="padding: 0; vertical-align: top;">
+                            <td rowspan="2" style="text-align: center; padding: 2mm; height: 75mm; vertical-align: top;"></td>
+                            <td rowspan="2" style="padding: 0; vertical-align: top;">
                                 <table class="nested-table">
                                     <tr><td style="width: 40%; font-weight: bold;">Nama (Huruf Besar)</td><td style="width: 2%;">:</td><td></td></tr>
                                     <tr><td style="font-weight: bold;">No. Kad Pengenalan</td><td>:</td><td></td></tr>
-                                    <!-- Jarak padding-bottom: 12mm ditambah di sini untuk Alamat -->
+                                    <!-- Jarak padding-bottom: 12mm dikekalkan untuk ruangan menulis di G1 Borang -->
                                     <tr><td style="font-weight: bold; vertical-align: top; padding-bottom: 12mm;">Alamat</td><td style="vertical-align: top; padding-bottom: 12mm;">:</td><td style="padding-bottom: 12mm;"></td></tr>
                                     <tr><td style="font-weight: bold;">No. Telefon</td><td>:</td><td></td></tr>
                                     <tr><td style="font-weight: bold;">Tarikh Mula Kerja</td><td>:</td><td></td></tr>
@@ -3548,19 +3548,24 @@ function bukaPreviewPDF(jenisBorang) {
                                 </table>
                             </td>
                             
-                            <!-- 2 Lajur Kosong untuk bahagian tuntutan -->
-                            <td style="border-right: 1px solid #000000; vertical-align: top; padding: 2mm;"></td>
-                            <td style="vertical-align: top; padding: 2mm;"></td>
+                            <!-- Lajur Kosong Tuntutan (Bahagian Atas - Tiada Garisan Bawah) -->
+                            <td style="border-bottom: none; border-right: 1px solid #000000; vertical-align: top; padding: 2mm;"></td>
+                            <td style="border-bottom: none; vertical-align: top; padding: 2mm;"></td>
                             
-                            <td style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
+                            <td rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold; padding: 2mm;">
                             </td>
-                            <td style="position: relative; padding: 2mm; vertical-align: top;">
+                            <td rowspan="2" style="position: relative; padding: 2mm; vertical-align: top;">
                                 <div style="font-size: 10px; text-align: justify; margin-bottom: 25mm;">Saya dengan ini mengaku dan bersumpah bahawa segala maklumat yang diberikan ini adalah benar belaka.</div>
                                 <div class="sign-area">
                                     <div class="sign-line"></div>
                                     <div style="font-size: 11px;">Tandatangan</div>
                                 </div>
                             </td>
+                        </tr>
+                        <tr>
+                            <!-- Lajur Kosong Tuntutan (Bahagian Bawah memanjang - Tiada Garisan Atas) -->
+                            <td style="border-top: none; border-right: 1px solid #000000; height: 100%;"></td>
+                            <td style="border-top: none; height: 100%;"></td>
                         </tr>
                     </tbody>
                 </table>
