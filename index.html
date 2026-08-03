@@ -1428,22 +1428,46 @@ Portal rasmi : jtksm.mohr.gov.my
             document.getElementById('mk_tarikh_sah').innerText = kes.tarikh; // Mock data
             document.getElementById('mk_tarikh_tugas').innerText = kes.tarikh; // Mock data
             
-            // --- Extract Mock Data (Simulasi data borang yang telah didaftarkan) ---
+// --- EKSTRAK MAKLUMAT PENGADU DARI BORANG ---
             const p_nama = kes.namaPengadu.replace(/<br>.*$/g, '');
-            const p_id = "880101-01-1234"; // Mock Data Pengadu
-            const p_alamat = "24, JALAN SARIA 7/3<br>TAMAN TITIWANGSA<br>86000 Kluang<br>Johor";
-            const p_alamat_kerja = "LOT 4765, JALAN BATU PAHAT<br>86000 Kluang<br>Johor";
-            const p_tel = "07-7721646";
-            const p_hp = "012-3456789";
-            const p_emel = "pengadu@email.com";
-            const p_bil_pengadu = "5 Orang";
+            const p_id = document.getElementById('noPendPengadu').value.trim() || "-";
+            
+            const p_a1 = document.getElementById('alamatPengadu1').value.trim();
+            const p_a2 = document.getElementById('alamatPengadu2').value.trim();
+            const p_a3 = document.getElementById('alamatPengadu3').value.trim();
+            const p_pos = document.getElementById('poskodPengadu').value.trim();
+            const p_bdr = document.getElementById('bandarPengadu').value.trim();
+            const p_ngr = document.getElementById('negeriPengadu').value.trim();
+            let p_alamatArr = [p_a1, p_a2, p_a3].filter(Boolean);
+            let p_posBdr = [p_pos, p_bdr].filter(Boolean).join(' ');
+            if(p_posBdr) p_alamatArr.push(p_posBdr);
+            if(p_ngr) p_alamatArr.push(p_ngr);
+            const p_alamat = p_alamatArr.length > 0 ? p_alamatArr.join('<br>') : "-";
 
+            const p_tel = document.getElementById('telPengadu').value.trim() || "-";
+            const p_hp = document.getElementById('hpPengadu').value.trim() || "-";
+            const p_emel = document.getElementById('emelPengadu').value.trim() || "-";
+            const p_bil_pengadu = document.getElementById('bilanganPengadu').value ? document.getElementById('bilanganPengadu').value + " Orang" : "-";
+
+            // --- EKSTRAK MAKLUMAT DEFENDAN DARI BORANG ---
             const d_nama = kes.namaDefendan;
-            const d_id = "JM0123456-X"; // Mock Data Defendan
-            const d_alamat = "LOT 4765, JALAN BATU PAHAT<br>86000 Kluang<br>Johor";
-            const d_tel = "07-7711223";
-            const d_hp = "017-9876543";
-            const d_emel = "admin@syarikat.com";
+            const d_id = document.getElementById('noPendDefendan').value.trim() || "-";
+            
+            const d_a1 = document.getElementById('alamatDefendan1').value.trim();
+            const d_a2 = document.getElementById('alamatDefendan2').value.trim();
+            const d_a3 = document.getElementById('alamatDefendan3').value.trim();
+            const d_pos = document.getElementById('poskodDefendan').value.trim();
+            const d_bdr = document.getElementById('bandarDefendan').value.trim();
+            const d_ngr = document.getElementById('negeriDefendan').value.trim();
+            let d_alamatArr = [d_a1, d_a2, d_a3].filter(Boolean);
+            let d_posBdr = [d_pos, d_bdr].filter(Boolean).join(' ');
+            if(d_posBdr) d_alamatArr.push(d_posBdr);
+            if(d_ngr) d_alamatArr.push(d_ngr);
+            const d_alamat = d_alamatArr.length > 0 ? d_alamatArr.join('<br>') : "-";
+
+            const d_tel = document.getElementById('telDefendan').value.trim() || "-";
+            const d_hp = document.getElementById('hpDefendan').value.trim() || "-";
+            const d_emel = document.getElementById('emelDefendan').value.trim() || "-";
 
             // Semak jika No ID Defendan menyerupai MyKad (12 digit dengan sengkang atau tanpa sengkang)
             const regexMyKad = /^\d{6}-?\d{2}-?\d{4}$/;
