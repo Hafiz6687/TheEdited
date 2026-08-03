@@ -1401,6 +1401,14 @@ Portal rasmi : jtksm.mohr.gov.my
                 };
             }
 
+            // Dummy data entry untuk senarai tugasan awal
+            memoriSenaraiKes.push({
+                noKes: "KBR/10103/2026/0112",
+                namaPengadu: "Mohamad Hafiz Bin Abu Bakar",
+                namaDefendan: "Abc Teknologi Enterprise<br><span style='font-size: 0.85em; font-weight: normal;'>Pemilik: Ali Bin Abu Chik</span>",
+                jenisAduan: "Individu",
+                tarikh: "2/8/2026"
+            });
             renderSenaraiTugas();
         });
 
@@ -2805,7 +2813,7 @@ function tukarPeranan() {
             if (btnEdit) { btnEdit.style.display = isReadonly ? 'inline-block' : 'none'; }
         }
 
-function tukarView(jenisView) {
+        function tukarView(jenisView) {
             const navSenarai = document.getElementById('navSenarai');
             const navDaftar = document.getElementById('navDaftar');
             const viewSenarai = document.getElementById('viewSenaraiTugas');
@@ -2833,9 +2841,6 @@ function tukarView(jenisView) {
                 tajukHalaman.innerHTML = 'Pendaftaran Kes Buruh';
                 btnCetakHeader.style.display = 'flex';
                 setStatusBorang(false);
-                
-                // --- KOD BAHARU: Tetapkan paparan sentiasa bermula di Tab 1 ---
-                pergiKeTabBorang('tab1');
             }
         }
 
@@ -2898,16 +2903,15 @@ function daftarKesSistem() {
             // 2. SEMAKAN: Cari jika no. kes ini asalnya adalah Draf
             let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.startsWith(noKesBersih));
 
-      if (indeksSediaAda !== -1) {
+            if (indeksSediaAda !== -1) {
+                // Jika jumpa, GANTI / UPDATE rekod draf tersebut dengan rekod rasmi (Tag kuning Draf akan hilang)
                 memoriSenaraiKes[indeksSediaAda] = rekodRasmi;
             } else {
+                // Jika tiada dalam senarai (daftar terus tanpa draf), tambah sebagai rekod baharu
                 memoriSenaraiKes.unshift(rekodRasmi);
             }
 
             alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
-            
-            resetBorangPendaftaran(); // <--- KOD BAHARU: Kosongkan borang serta merta
-            
             tukarView('senarai');
         }
 
@@ -3624,74 +3628,73 @@ function simpanDrafSistem() {
     // 3. SEMAKAN: Cari jika noKesBersih sudah wujud dalam senarai (Elak Duplicate)
     let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.startsWith(noKesBersih));
 
-if (indeksSediaAda !== -1) {
-                memoriSenaraiKes[indeksSediaAda] = {
-                    noKes: noKesDenganTag,
-                    namaPengadu: namaPengaduFinal,
-                    namaDefendan: namaDefendanFinal,
-                    jenisAduan: jenisAduan,
-                    tarikh: tarikhHariIni
-                };
-            } else {
-                memoriSenaraiKes.unshift({ 
-                    noKes: noKesDenganTag, 
-                    namaPengadu: namaPengaduFinal, 
-                    namaDefendan: namaDefendanFinal, 
-                    jenisAduan: jenisAduan, 
-                    tarikh: tarikhHariIni 
-                });
-            }
-            
-            alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
-            
-            resetBorangPendaftaran(); // <--- KOD BAHARU: Kosongkan borang serta merta
-            
-            tukarView('senarai');
-            pergiKeTabBorang('tab1'); 
-        }
-// --- FUNGSI RESET BORANG (KOSONGKAN SEMUA FIELD) ---
-        function resetBorangPendaftaran() {
-            // 1. Kosongkan memori jadual tuntutan
-            memoriTuntutan = [];
-            memoriTuntutanKetua = [];
-            renderJadualTuntutan();
-            
-            // 2. Kosongkan semua input dan pilihan
-            const bekasBorang = document.getElementById('viewPendaftaranKes');
-            if (bekasBorang) {
-                const inputs = bekasBorang.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], input[type="email"], input[type="time"], textarea');
-                inputs.forEach(input => input.value = '');
-                
-                const selects = bekasBorang.querySelectorAll('select');
-                selects.forEach(select => select.selectedIndex = 0);
-                
-                const checkboxes = bekasBorang.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(cb => cb.checked = false);
-                
-                // Tetapkan radio button aduan kembali kepada Individu
-                const aduanIndividu = document.getElementById('aduanIndividu');
-                if(aduanIndividu) aduanIndividu.checked = true;
-            }
-
-            // 3. Kembalikan susun atur borang kepada keadaan lalai
-            tukarPeranan(); 
-            kawalJenisDaftarPengadu();
-            kawalJenisDaftarDefendan();
-        }
-
-        // --- FUNGSI BATAL PEMFAILAN TELAH DIKEMASKINI ---
+    if (indeksSediaAda !== -1) {
+        // Jika sudah ada, UPDATE/KEMASKINI data
+        memoriSenaraiKes[indeksSediaAda] = {
+            noKes: noKesDenganTag,
+            namaPengadu: namaPengaduFinal,
+            namaDefendan: namaDefendanFinal,
+            jenisAduan: jenisAduan,
+            tarikh: tarikhHariIni
+        };
+    } else {
+        // Jika tiada, TAMBAH sebagai rekod baharu
+        memoriSenaraiKes.unshift({ 
+            noKes: noKesDenganTag, 
+            namaPengadu: namaPengaduFinal, 
+            namaDefendan: namaDefendanFinal, 
+            jenisAduan: jenisAduan, 
+            tarikh: tarikhHariIni 
+        });
+    }
+    
+    alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
+    
+    tukarView('senarai');
+    pergiKeTabBorang('tab1'); 
+}
+// --- FUNGSI batalPemfailan TELAH DIKEMASKINI ---
         function batalPemfailan() {
             if (confirm("Adakah anda pasti mahu membatalkan pemfailan kes ini? Semua maklumat akan ditetapkan semula.")) {
                 
-                resetBorangPendaftaran(); // Panggil fungsi reset di atas
+                // 1. Kosongkan memori jadual tuntutan
+                memoriTuntutan = [];
+                memoriTuntutanKetua = [];
+                renderJadualTuntutan();
                 
-                // Tutup preview sekiranya sedang dibuka
+                // 2. Kosongkan semua ruangan Input, Textarea, dan Select di dalam borang pendaftaran
+                const bekasBorang = document.getElementById('viewPendaftaranKes');
+                if (bekasBorang) {
+                    // Kosongkan semua input teks, tarikh, nombor, masa dan textarea
+                    const inputs = bekasBorang.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], input[type="email"], input[type="time"], textarea');
+                    inputs.forEach(input => input.value = '');
+                    
+                    // Reset semua dropdown (select) kembali ke pilihan pertama (-Sila Pilih-)
+                    const selects = bekasBorang.querySelectorAll('select');
+                    selects.forEach(select => select.selectedIndex = 0);
+                    
+                    // Buang tanda (tick) pada checkbox
+                    const checkboxes = bekasBorang.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => {
+                        // Jangan untick checkbox "Majikan adalah pengadu" jika anda mahu ia kekal default, 
+                        // tetapi untuk reset bersih, kita untick semua.
+                        cb.checked = false; 
+                    });
+                }
+
+                // 3. Kembalikan borang kepada keadaan lalai (default) melalui fungsi sedia ada
+                tukarPeranan(); // Memastikan susun atur pengadu/defendan kembali normal
+                kawalJenisDaftarPengadu();
+                kawalJenisDaftarDefendan();
+                
+                // 4. Tutup preview sekiranya sedang dibuka
                 document.getElementById('modalPreview').style.display = 'none';
                 const actionMenu = document.getElementById('actionMenu');
                 if(actionMenu) actionMenu.classList.remove('show');
                 
                 alert("Pemfailan kes telah berjaya dibatalkan.");
                 
+                // 5. Kembali ke senarai utama dan pastikan Tab Borang kembali ke Tab 1
                 tukarView('senarai');
                 pergiKeTabBorang('tab1');
             }
