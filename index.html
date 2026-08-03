@@ -1793,41 +1793,55 @@ Portal rasmi : jtksm.mohr.gov.my
             }
         }
 
-        function kemaskiniDropdownPendaftaran() {
-            const dropPengadu = document.getElementById('jenisDaftarPengadu');   
-            const dropDefendan = document.getElementById('jenisDaftarDefendan'); 
-            const isMajikan = document.getElementById('majikan')?.checked;
-            const isBerkumpulan = document.getElementById('aduanBerkumpulan')?.checked; 
-            
-            const valPengadu = dropPengadu.value;
-            const valDefendan = dropDefendan.value;
-            
-            dropPengadu.innerHTML = `<option value="MyKad" selected>MyKad</option><option value="Pasport">Pasport</option>`;
-            
-            let optionsDef = '<option value="">-Sila Pilih-</option>';
-            
-            // LOGIK BARU
-            if (isBerkumpulan && !isMajikan) {
-                optionsDef += '<option value="SSM (Sdn. Bhd./Bhd.)">SSM (Sdn. Bhd./Bhd.)</option>';
-            } else {
-                optionsDef += '<option value="SSM (Sdn. Bhd./Bhd./Enterprise)">SSM (Sdn. Bhd./Bhd./Enterprise)</option>';
-            }
+function kemaskiniDropdownPendaftaran() {
+    const dropPengadu = document.getElementById('jenisDaftarPengadu');
+    const dropDefendan = document.getElementById('jenisDaftarDefendan');
+    const isMajikan = document.getElementById('majikan')?.checked;
+    const isBerkumpulan = document.getElementById('aduanBerkumpulan')?.checked;
+    const isIndividu = document.getElementById('aduanIndividu')?.checked;
 
-            if (!isMajikan) { optionsDef += '<option value="SSM (Enterprise)">SSM (Enterprise)</option>'; }
-            optionsDef += '<option value="MyKad">MyKad</option><option value="Lain-lain">Lain-lain</option>';
-            
-            dropDefendan.innerHTML = optionsDef;
-            
-            if(Array.from(dropPengadu.options).some(o => o.value === valPengadu)) dropPengadu.value = valPengadu;
-            
-            if (valDefendan === 'SSM (Sdn. Bhd./Bhd./Enterprise)' && isBerkumpulan) { dropDefendan.value = 'SSM (Sdn. Bhd./Bhd.)'; } 
-            else if (valDefendan === 'SSM (Sdn. Bhd./Bhd.)' && !isBerkumpulan) { dropDefendan.value = 'SSM (Sdn. Bhd./Bhd./Enterprise)'; } 
-            else if(Array.from(dropDefendan.options).some(o => o.value === valDefendan)) { dropDefendan.value = valDefendan; } 
-            else { dropDefendan.value = ""; }
-            
-            kawalJenisDaftarPengadu();
-            kawalJenisDaftarDefendan();
-        }
+    const valPengadu = dropPengadu.value;
+    const valDefendan = dropDefendan.value;
+
+    dropPengadu.innerHTML = `<option value="MyKad" selected>MyKad</option><option value="Pasport">Pasport</option>`;
+
+    let optionsDef = '<option value="">-Sila Pilih-</option>';
+
+    // LOGIK BARU
+    if (isBerkumpulan && !isMajikan) {
+        optionsDef += '<option value="SSM (Sdn. Bhd./Bhd.)">SSM (Sdn. Bhd./Bhd.)</option>';
+    } else if (isIndividu && !isMajikan) {
+        // PERUBAHAN DI SINI: Tukar kepada SSM (Sdn. Bhd./Bhd.) untuk Aduan Individu
+        optionsDef += '<option value="SSM (Sdn. Bhd./Bhd.)">SSM (Sdn. Bhd./Bhd.)</option>';
+    } else {
+        // Kekal untuk Majikan
+        optionsDef += '<option value="SSM (Sdn. Bhd./Bhd./Enterprise)">SSM (Sdn. Bhd./Bhd./Enterprise)</option>';
+    }
+
+    if (!isMajikan) { optionsDef += '<option value="SSM (Enterprise)">SSM (Enterprise)</option>'; }
+    optionsDef += '<option value="MyKad">MyKad</option><option value="Lain-lain">Lain-lain</option>';
+
+    dropDefendan.innerHTML = optionsDef;
+
+    if(Array.from(dropPengadu.options).some(o => o.value === valPengadu)) dropPengadu.value = valPengadu;
+
+    // Logik Pengekalan Nilai (Value Retention) Supaya Pilihan Tidak Reset Jika Bertukar Status
+    if (valDefendan === 'SSM (Sdn. Bhd./Bhd./Enterprise)' && !isMajikan) { 
+        dropDefendan.value = 'SSM (Sdn. Bhd./Bhd.)'; 
+    } 
+    else if (valDefendan === 'SSM (Sdn. Bhd./Bhd.)' && isMajikan) { 
+        dropDefendan.value = 'SSM (Sdn. Bhd./Bhd./Enterprise)'; 
+    } 
+    else if(Array.from(dropDefendan.options).some(o => o.value === valDefendan)) { 
+        dropDefendan.value = valDefendan; 
+    } 
+    else { 
+        dropDefendan.value = ""; 
+    }
+
+    kawalJenisDaftarPengadu();
+    kawalJenisDaftarDefendan();
+}
 
         function simpanNamaProfil(el) { localStorage.setItem('eLC_namaProfil', el.innerHTML); }
 
@@ -3441,41 +3455,6 @@ function bukaPreviewPDF(jenisBorang) {
         document.getElementById('menuCetakG1').style.display = 'flex';
     }
 }
-        function kemaskiniDropdownPendaftaran() {
-            const dropPengadu = document.getElementById('jenisDaftarPengadu');
-            const dropDefendan = document.getElementById('jenisDaftarDefendan');
-            const isMajikan = document.getElementById('majikan')?.checked;
-            const isBerkumpulan = document.getElementById('aduanBerkumpulan')?.checked;
-
-            const valPengadu = dropPengadu.value;
-            const valDefendan = dropDefendan.value;
-
-            dropPengadu.innerHTML = `<option value="MyKad" selected>MyKad</option><option value="Pasport">Pasport</option>`;
-
-            let optionsDef = '<option value="">-Sila Pilih-</option>';
-
-            // LOGIK BARU
-            if (isBerkumpulan && !isMajikan) {
-                optionsDef += '<option value="SSM (Sdn. Bhd./Bhd.)">SSM (Sdn. Bhd./Bhd.)</option>';
-            } else {
-                optionsDef += '<option value="SSM (Sdn. Bhd./Bhd./Enterprise)">SSM (Sdn. Bhd./Bhd./Enterprise)</option>';
-            }
-
-            if (!isMajikan) { optionsDef += '<option value="SSM (Enterprise)">SSM (Enterprise)</option>'; }
-            optionsDef += '<option value="MyKad">MyKad</option><option value="Lain-lain">Lain-lain</option>';
-
-            dropDefendan.innerHTML = optionsDef;
-
-            if(Array.from(dropPengadu.options).some(o => o.value === valPengadu)) dropPengadu.value = valPengadu;
-
-            if (valDefendan === 'SSM (Sdn. Bhd./Bhd./Enterprise)' && isBerkumpulan) { dropDefendan.value = 'SSM (Sdn. Bhd./Bhd.)'; }
-            else if (valDefendan === 'SSM (Sdn. Bhd./Bhd.)' && !isBerkumpulan) { dropDefendan.value = 'SSM (Sdn. Bhd./Bhd./Enterprise)'; }
-            else if(Array.from(dropDefendan.options).some(o => o.value === valDefendan)) { dropDefendan.value = valDefendan; }
-            else { dropDefendan.value = ""; }
-
-            kawalJenisDaftarPengadu();
-            kawalJenisDaftarDefendan();
-        }
 
 // Kemaskini fungsi ini supaya ia jadi 'bijak'
         function sediaUntukCetak() { 
