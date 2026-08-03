@@ -2408,13 +2408,19 @@ function hapusTuntutan(index, jenisJadual = 'biasa') {
             } 
         }
 function renderJadualTuntutan() {
-            // Render Jadual Biasa / Keseluruhan
+            // 1. Render Jadual Biasa / Keseluruhan (Individu, Majikan, Keseluruhan Berkumpulan)
             const tbody = document.querySelector("#jadualTuntutan tbody");
             if (tbody) {
                 tbody.innerHTML = ""; 
-                if (memoriTuntutan.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr>`; } 
-                else {
+                if (memoriTuntutan.length === 0) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr>`; 
+                } else {
+                    let jumlahKeseluruhan = 0; // Variable untuk kira jumlah total
+
                     memoriTuntutan.forEach((item, index) => {
+                        const jumlahNum = parseFloat(item.jumlah);
+                        jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum; // Tambah ke jumlah keseluruhan
+
                         const jumlahCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -2424,16 +2430,32 @@ function renderJadualTuntutan() {
                         `;
                         tbody.appendChild(tr);
                     });
+
+                    // Tambah Baris Jumlah Keseluruhan di bawah jadual biasa
+                    const trTotal = document.createElement('tr');
+                    trTotal.style.backgroundColor = '#f1f5f9';
+                    trTotal.style.fontWeight = 'bold';
+                    trTotal.innerHTML = `
+                        <td colspan="3" style="text-align:right; padding-right: 15px; color: var(--text-main);">JUMLAH KESELURUHAN</td>
+                        <td colspan="3" style="color: var(--primary-blue);">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    `;
+                    tbody.appendChild(trTotal);
                 }
             }
 
-            // Render Jadual Ketua (Hanya jika wujud di skrin)
+            // 2. Render Jadual Ketua (Hanya muncul jika aduan berkumpulan)
             const tbodyKetua = document.querySelector("#jadualTuntutanKetua tbody");
             if (tbodyKetua) {
                 tbodyKetua.innerHTML = ""; 
-                if (memoriTuntutanKetua.length === 0) { tbodyKetua.innerHTML = `<tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr>`; } 
-                else {
+                if (memoriTuntutanKetua.length === 0) { 
+                    tbodyKetua.innerHTML = `<tr><td colspan="6" class="empty-row">Tiada maklumat tuntutan direkodkan.</td></tr>`; 
+                } else {
+                    let jumlahKeseluruhanKetua = 0; // Variable untuk kira jumlah total ketua
+
                     memoriTuntutanKetua.forEach((item, index) => {
+                        const jumlahNum = parseFloat(item.jumlah);
+                        jumlahKeseluruhanKetua += isNaN(jumlahNum) ? 0 : jumlahNum; // Tambah ke jumlah keseluruhan ketua
+
                         const jumlahCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -2443,6 +2465,16 @@ function renderJadualTuntutan() {
                         `;
                         tbodyKetua.appendChild(tr);
                     });
+
+                    // Tambah Baris Jumlah Keseluruhan di bawah jadual ketua
+                    const trTotalKetua = document.createElement('tr');
+                    trTotalKetua.style.backgroundColor = '#e0f2fe'; // Latar belakang biru lembut sedikit berbeza
+                    trTotalKetua.style.fontWeight = 'bold';
+                    trTotalKetua.innerHTML = `
+                        <td colspan="3" style="text-align:right; padding-right: 15px; color: var(--text-main);">JUMLAH KESELURUHAN KETUA</td>
+                        <td colspan="3" style="color: #0284c7;">RM ${jumlahKeseluruhanKetua.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    `;
+                    tbodyKetua.appendChild(trTotalKetua);
                 }
             }
         }
