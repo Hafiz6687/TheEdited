@@ -495,8 +495,8 @@
             <button class="icon-btn" onclick="document.getElementById('actionMenu').classList.toggle('show')" title="Tindakan">
                 ⋮
             </button>
-            <div id="actionMenu" class="dropdown-menu">
-                <a href="#" onclick="kemaskiniDariPreview()">✏️ Kemaskini</a>
+<div id="actionMenu" class="dropdown-menu">
+                <a href="#" id="menuKemaskini" onclick="kemaskiniDariPreview()">✏️ Kemaskini</a>
                 <a href="#" id="menuCetakAkuan" onclick="cetakKhusus('akuan')">🖨️ Cetak Akuan Pemfailan</a>
                 <a href="#" id="menuCetakKenyataan" onclick="cetakKhusus('kenyataan')">🖨️ Cetak Kenyataan Tuntutan</a>
                 
@@ -504,7 +504,7 @@
                 <a href="#" id="menuCetakG1" onclick="document.getElementById('actionMenu').classList.remove('show'); window.print();" style="display: none;">🖨️ Cetak G1</a>
                 
                 <a href="#" id="menuDaftar" onclick="daftarDariPreview()" style="display: none;">🚀 Daftar</a>
-                <a href="#" onclick="document.getElementById('modalPreview').style.display='none'; batalPemfailan();" style="color: var(--danger);">🗑️ Batal Pemfailan</a>
+                <a href="#" id="menuBatal" onclick="document.getElementById('modalPreview').style.display='none'; batalPemfailan();" style="color: var(--danger);">🗑️ Batal Pemfailan</a>
             </div>
         </div>
     </div> <!-- END OF MODAL PREVIEW -->
