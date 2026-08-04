@@ -1689,18 +1689,147 @@ Portal rasmi : jtksm.mohr.gov.my
             }
         }
 
-        function tindakanSebutan() {
+function tindakanSebutan() {
             const tarikh = document.getElementById('mk_tarikh_sebutan').value;
             const masa = document.getElementById('mk_masa_sebutan').value;
             if (tarikh && masa) {
                 alert('Dokumen Notis Sebutan sedia untuk dijana.');
             } else {
-                if(confirm("Adakah anda pasti mahu menarik balik kes ini?")) {
-                    alert("Kes telah ditarik balik.");
-                    tukarView('senarai');
-                }
+                // Panggil fungsi baharu untuk menjana Preview Akuan Penarikan Balik
+                bukaPreviewTarikBalik();
             }
         }
+
+        // FUNGSI BAHARU: Menjana dan Memaparkan Akuan Penarikan Balik Kes
+        function bukaPreviewTarikBalik() {
+            const kes = memoriSenaraiKes[indexKesSemasa];
+            if (!kes) return;
+
+            // Dapatkan maklumat asas
+            let noKes = kes.noKes.split('<br>')[0].trim();
+            let namaP = "", kpP = "", alamatP = "", namaD = "";
+            
+            // Ekstrak maklumat dari data yang disimpan (jika ada)
+            if (kes.dataBorang && kes.dataBorang.inputs) {
+                const inputs = kes.dataBorang.inputs;
+                const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
+                
+                if (isMajikan) {
+                    namaP = inputs['namaDefendan'] || '[NAMA MAJIKAN]';
+                    kpP = inputs['noPendDefendan'] || '_________________________';
+                    let almt = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "").join(', ');
+                    alamatP = almt || '____________________________________________________';
+                    namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
+                } else {
+                    namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
+                    kpP = inputs['noPendPengadu'] || '_________________________';
+                    let almt = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join(', ');
+                    alamatP = almt || '____________________________________________________';
+                    namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
+                }
+            } else {
+                // Fallback jika tiada rekod data yang terperinci
+                namaP = kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase();
+                kpP = "_________________________";
+                alamatP = "____________________________________________________";
+                namaD = kes.namaDefendan.replace(/<br>.*$/g, '').toUpperCase();
+            }
+
+            // Stuktur HTML Rasmi Akuan Penarikan Balik Kes
+            const htmlTarikBalik = `
+                <style>
+                    @media print {
+                        .kertas-tb { margin: 0 !important; padding: 0 !important; box-shadow: none !important; width: 100% !important; min-height: auto !important; }
+                        body { background: white; }
+                        body > *:not(#printArea) { display: none !important; }
+                        #printArea { display: block !important; }
+                    }
+                    .kertas-tb {
+                        background: white; width: 21cm; min-height: 29.7cm; padding: 2.5cm;
+                        margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+                        font-family: Arial, sans-serif; color: black; font-size: 11.5pt; line-height: 1.6;
+                        box-sizing: border-box; text-align: justify;
+                    }
+                    .tb-title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 25px; text-decoration: underline; }
+                    .tb-ref { text-align: right; font-weight: bold; margin-bottom: 30px; }
+                    .tb-list { margin-top: 10px; margin-bottom: 10px; padding-left: 25px; }
+                    .tb-list li { margin-bottom: 12px; }
+                    .tb-list-alpha { list-style-type: lower-alpha; padding-left: 25px; margin-top: 8px; }
+                    .tb-sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px; page-break-inside: avoid; }
+                </style>
+                <div class="kertas-tb">
+                    <div class="tb-ref">No. Kes: ${noKes}</div>
+                    <div class="tb-title">AKUAN PENARIKAN BALIK KES</div>
+                    
+                    <p>Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (No. Kad Pengenalan / Pasport / Pendaftaran: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").</p>
+                    
+                    <p>Saya dengan ini membuat sesungguhnya dan sebenarnya berikrar dan menyatakan seperti berikut:</p>
+                    
+                    <ol class="tb-list">
+                        <li>Saya menarik balik keseluruhan aduan, tuntutan dan prosiding terhadap Defendan berhubung kes yang didaftarkan di bawah nombor kes <strong>${noKes}</strong>.</li>
+                        <li>Keputusan penarikan balik ini dibuat oleh saya:
+                            <ol class="tb-list-alpha">
+                                <li>secara sukarela;</li>
+                                <li>tanpa paksaan;</li>
+                                <li>tanpa ugutan;</li>
+                                <li>tanpa tekanan; dan</li>
+                                <li>tanpa pengaruh mana-mana pihak.</li>
+                            </ol>
+                        </li>
+                        <li>Saya memahami kesan serta implikasi undang-undang akibat penarikan balik kes ini.</li>
+                        <li>Saya tidak lagi mempunyai sebarang tuntutan terhadap Defendan berhubung perkara yang menjadi asas kepada kes tersebut, melainkan hak yang diperuntukkan secara nyata oleh undang-undang.</li>
+                        <li>Saya memohon supaya pihak Jabatan Tenaga Kerja / Mahkamah merekodkan penarikan balik kes ini.</li>
+                    </ol>
+                    
+                    <p style="margin-top: 25px;">Saya membuat akuan ini dengan kepercayaan bahawa segala kandungan akuan ini adalah benar mengikut pengetahuan dan pemahaman saya.</p>
+                    
+                    <div class="tb-sign-grid">
+                        <div>
+                            <strong>Ditandatangani oleh (Pengadu):</strong><br><br><br><br>
+                            ...................................................................<br>
+                            Nama: <strong>${namaP.toUpperCase()}</strong><br>
+                            No. KP / Pasport: ${kpP}<br>
+                            Tarikh: _______________________<br>
+                            Tempat: _______________________
+                        </div>
+                        <div>
+                            <strong>Dihadapan (Saksi / Pegawai):</strong><br><br><br><br>
+                            ...................................................................<br>
+                            Nama: _______________________<br>
+                            Jawatan: ____________________<br>
+                            Tarikh: _______________________<br>
+                            <br>
+                            Cop Rasmi (jika berkenaan):
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Masukkan HTML ke dalam ruang Preview dan kawasan Cetakan
+            document.getElementById('previewContent').innerHTML = htmlTarikBalik;
+            document.getElementById('printArea').innerHTML = htmlTarikBalik;
+            
+            // Konfigurasi butang Action Dropdown di penjuru atas kanan
+            document.getElementById('menuCetakAkuan').style.display = 'none';
+            document.getElementById('menuCetakKenyataan').style.display = 'none';
+            document.getElementById('menuDaftar').style.display = 'none';
+            
+            // Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
+            const menuCetakG1 = document.getElementById('menuCetakG1');
+            menuCetakG1.style.display = 'flex';
+            menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
+            menuCetakG1.onclick = function() {
+                document.getElementById('actionMenu').classList.remove('show');
+                window.print();
+            };
+
+            // Tambahkan alert di sini sebelum modal dipaparkan
+            alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
+
+            // Tampilkan Modal Preview
+            document.getElementById('modalPreview').style.display = 'flex';
+        }
+
 
         function toggleWakilMajikan() {
             const kandungan = document.getElementById('kandunganWakilMajikan');
