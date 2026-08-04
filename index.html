@@ -2927,20 +2927,33 @@ alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem.");
 // FUNGSI BARU UNTUK KUMPUL SEMUA DATA BORANG
 function kumpulDataBorang() {
     let formData = {};
-    // Ambil semua input, select dan textarea dalam kawasan pendaftaran
     const inputs = document.getElementById('viewPendaftaranKes').querySelectorAll('input, select, textarea');
     inputs.forEach(el => {
-        if (el.id) {
-            if (el.type === 'checkbox' || el.type === 'radio') {
-                formData[el.id] = el.checked;
-            } else {
-                formData[el.id] = el.value;
-            }
+        // Abaikan elemen tanpa id atau name
+        if (!el.id && !el.name) return; 
+
+        let key = el.id || el.name; 
+
+        if (el.type === 'radio') {
+            if (el.checked) formData[key] = el.value;
+        } else if (el.type === 'checkbox') {
+            formData[key] = el.checked;
+        } else {
+            formData[key] = el.value;
         }
     });
     
+    // Simpan senarai elaun secara manual kerana ia dijana secara dinamik (tiada id/name tetap)
+    let senaraiElaunDinamik = [];
+    document.querySelectorAll('#senaraiElaun > div').forEach(div => {
+        let jenis = div.querySelector('.input-elaun-jenis')?.value || '';
+        let jumlah = div.querySelector('.input-elaun-jumlah')?.value || '';
+        if(jenis || jumlah) senaraiElaunDinamik.push({jenis, jumlah});
+    });
+
     return {
         inputs: formData,
+        elaun: senaraiElaunDinamik,
         tuntutanBiasa: JSON.parse(JSON.stringify(memoriTuntutan)),
         tuntutanKetua: JSON.parse(JSON.stringify(memoriTuntutanKetua))
     };
@@ -3029,36 +3042,78 @@ function bukaKesDidaftar(index) {
     
     const kes = memoriSenaraiKes[index];
     
-    // SEMAK JIKA REKOD INI MEMPUNYAI DATA BORANG YANG DISIMPAN
     if (kes.dataBorang) {
-        // 1. Suntik semula nilai ke dalam input
         const formData = kes.dataBorang.inputs;
-        for (const id in formData) {
-            const el = document.getElementById(id);
-            if (el) {
-                if (el.type === 'checkbox' || el.type === 'radio') {
-                    el.checked = formData[id];
+        
+        // LANGKAH 1: Setup Butang Penentu Utama DAHULU supaya struktur UI terbina dengan betul
+        if(document.getElementById('majikan') && formData['majikan'] !== undefined) document.getElementById('majikan').checked = formData['majikan'];
+        if(document.getElementById('aduanIndividu') && formData['aduan'] === 'Individu') document.getElementById('aduanIndividu').checked = true;
+        if(document.getElementById('aduanBerkumpulan') && formData['aduan'] === 'Berkumpulan') document.getElementById('aduanBerkumpulan').checked = true;
+        
+        tukarPeranan(); // Akan bina options dropdown MyKad/SSM dll
+        
+        if(formData['jenisDaftarPengadu']) document.getElementById('jenisDaftarPengadu').value = formData['jenisDaftarPengadu'];
+        kawalJenisDaftarPengadu(); // Akan bina options dropdown Warganegara
+        
+        if(formData['jenisDaftarDefendan']) document.getElementById('jenisDaftarDefendan').value = formData['jenisDaftarDefendan'];
+        kawalJenisDaftarDefendan();
+        
+        // LANGKAH 2: Kosongkan borang (reset radio/checkbox) dan Suntik Semua Data
+        const allInputs = document.getElementById('viewPendaftaranKes').querySelectorAll('input, select, textarea');
+        allInputs.forEach(el => {
+            if (el.type === 'radio' || el.type === 'checkbox') el.checked = false;
+        });
+
+        for (const key in formData) {
+            const elById = document.getElementById(key);
+            if (elById) {
+                if (elById.type === 'checkbox') {
+                    elById.checked = formData[key];
+                } else if (elById.type === 'radio') {
+                    // Diuruskan guna 'name' di bawah
                 } else {
-                    el.value = formData[id];
+                    elById.value = formData[key];
                 }
+            } else {
+                // Cari butang Radio berdasarkan 'name' dan 'value'
+                const elByName = document.querySelector(`input[name="${key}"][value="${formData[key]}"]`);
+                if (elByName) elByName.checked = true;
             }
         }
         
-        // 2. Suntik semula memori tuntutan kewangan
+        // Suntik senarai Elaun dinamik
+        const bekasElaun = document.getElementById('senaraiElaun');
+        if (bekasElaun) bekasElaun.innerHTML = ''; // Kosongkan dahulu
+        if (kes.dataBorang.elaun && kes.dataBorang.elaun.length > 0) {
+            kes.dataBorang.elaun.forEach(elData => {
+                tambahMedanElaun();
+                let lastDiv = bekasElaun.lastElementChild;
+                if(lastDiv) {
+                    lastDiv.querySelector('.input-elaun-jenis').value = elData.jenis;
+                    lastDiv.querySelector('.input-elaun-jumlah').value = elData.jumlah;
+                }
+            });
+        }
+
+        // LANGKAH 3: Panggil fungsi kemaskini paparan Togol
+        toggleAduan();
+        semakWakilLengkap();
+        kawalWarganegara();
+        kawalSektor(); 
+        toggleMaklumatPerkhidmatan();
+        toggleElaun();
+        toggleWaktuKerja();
+        toggleHariKerja();
+        toggleAlamatKerja();
+        janaKenyataanAwal();
+        
+        // LANGKAH 4: Load semula Jadual Tuntutan Kewangan
         memoriTuntutan = kes.dataBorang.tuntutanBiasa ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanBiasa)) : [];
         memoriTuntutanKetua = kes.dataBorang.tuntutanKetua ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanKetua)) : [];
         renderJadualTuntutan();
         
-        // 3. Panggil fungsi UI untuk kemaskini paparan yang bergantung pada radio/checkbox
-        tukarPeranan();
-        kawalJenisDaftarPengadu();
-        kawalJenisDaftarDefendan();
-        toggleAduan();
-        semakWakilLengkap();
-        janaKenyataanAwal();
-        
     } else {
-        // JIKA TIADA DATA (Legacy fallback)
+        // Fallback untuk rekod Kes Dummy (seperti KBR/10103/2026/0112)
         let noKesBersih = kes.noKes.split('<br>')[0].trim();
         document.getElementById('noKes').value = noKesBersih;
         
@@ -3080,7 +3135,7 @@ function bukaKesDidaftar(index) {
     
     tukarView('daftar', true); 
     pergiKeTabBorang('tab1');
-    setStatusBorang(true);
+    setStatusBorang(true); // Tukar borang ke status kemaskini
 }
 
         function toTitleCase(str) { if (!str || str === '-') return '-'; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
