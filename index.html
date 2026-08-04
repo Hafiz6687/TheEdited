@@ -3771,9 +3771,21 @@ function bukaPreviewPDF(jenisBorang) {
             setTimeout(() => { window.print(); document.body.classList.remove('print-only-akuan', 'print-only-kenyataan'); semakStatusCetakLengkap(); }, 500);
         }
 
-        function semakStatusCetakLengkap() {
-            if (isAkuanPrinted && isKenyataanPrinted) { document.getElementById('menuDaftar').style.display = 'block'; }
-        }
+function semakStatusCetakLengkap() {
+    // 1. Sembunyikan menu cetakan jika ia telah berjaya dicetak
+    if (isAkuanPrinted) {
+        document.getElementById('menuCetakAkuan').style.display = 'none';
+    }
+    
+    if (isKenyataanPrinted) {
+        document.getElementById('menuCetakKenyataan').style.display = 'none';
+    }
+
+    // 2. Tunjukkan butang 'Daftar' jika kedua-dua borang telah dicetak
+    if (isAkuanPrinted && isKenyataanPrinted) {
+        document.getElementById('menuDaftar').style.display = 'flex'; 
+    }
+}
 
         function daftarDariPreview() {
             document.getElementById('modalPreview').style.display = 'none';
