@@ -2784,43 +2784,45 @@ function bukaTab(tabId, elemenTab) {
             kawalJenisDaftarDefendan();
         }
 
-        function tukarView(jenisView) {
-            const navSenarai = document.getElementById('navSenarai');
-            const navDaftar = document.getElementById('navDaftar');
-            const viewSenarai = document.getElementById('viewSenaraiTugas');
-            const viewDaftar = document.getElementById('viewPendaftaranKes');
-            const viewMaklumat = document.getElementById('viewMaklumatKes');
-            const tajukHalaman = document.getElementById('tajukHalamanAtas');
-            const btnCetakHeader = document.getElementById('butangCetakHeader');
+function tukarView(jenisView, dariBukaKes = false) {
+    const navSenarai = document.getElementById('navSenarai');
+    const navDaftar = document.getElementById('navDaftar');
+    const viewSenarai = document.getElementById('viewSenaraiTugas');
+    const viewDaftar = document.getElementById('viewPendaftaranKes');
+    const viewMaklumat = document.getElementById('viewMaklumatKes');
+    const tajukHalaman = document.getElementById('tajukHalamanAtas');
+    const btnCetakHeader = document.getElementById('butangCetakHeader');
 
-            navSenarai.classList.remove('active');
-            navDaftar.classList.remove('active');
+    navSenarai.classList.remove('active');
+    navDaftar.classList.remove('active');
 
-            viewSenarai.style.display = 'none';
-            viewDaftar.style.display = 'none';
-            viewMaklumat.style.display = 'none';
+    viewSenarai.style.display = 'none';
+    viewDaftar.style.display = 'none';
+    viewMaklumat.style.display = 'none';
 
-            if (jenisView === 'senarai') {
-                navSenarai.classList.add('active');
-                viewSenarai.style.display = 'block';
-                tajukHalaman.innerHTML = 'Senarai Tugasan';
-                btnCetakHeader.style.display = 'none';
-                renderSenaraiTugas();
-            } else if (jenisView === 'daftar') {
-                navDaftar.classList.add('active');
-                viewDaftar.style.display = 'block';
-                tajukHalaman.innerHTML = 'Pendaftaran Kes Buruh';
-                btnCetakHeader.style.display = 'flex';
-                setStatusBorang(false);
-                
-                if (isSelesaiDaftar === true) {
-                    resetBorangPendaftaran();
-                    isSelesaiDaftar = false; 
-                }
-                
-                pergiKeTabBorang('tab1');
-            }
+    if (jenisView === 'senarai') {
+        navSenarai.classList.add('active');
+        viewSenarai.style.display = 'block';
+        tajukHalaman.innerHTML = 'Senarai Tugasan';
+        btnCetakHeader.style.display = 'none';
+        renderSenaraiTugas();
+    } else if (jenisView === 'daftar') {
+        navDaftar.classList.add('active');
+        viewDaftar.style.display = 'block';
+        tajukHalaman.innerHTML = 'Pendaftaran Kes Buruh';
+        btnCetakHeader.style.display = 'flex';
+        setStatusBorang(false);
+        
+        // LOGIK BARU: Kosongkan borang jika pendaftaran selesai, 
+        // ATAU jika pengguna klik dari sidebar ketika masih dalam Mode Edit yang terbengkalai
+        if (isSelesaiDaftar === true || (!dariBukaKes && isEditMode === true)) {
+            resetBorangPendaftaran();
+            isSelesaiDaftar = false; 
         }
+        
+        pergiKeTabBorang('tab1');
+    }
+}
 
         function renderSenaraiTugas() {
             const tbody = document.getElementById('bodySenaraiTugas');
@@ -2900,12 +2902,14 @@ function bukaTab(tabId, elemenTab) {
                 memoriSenaraiKes.unshift(rekodRasmi);
             }
 
-            alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
-            
-            isSelesaiDaftar = true; 
-            
-            tukarView('senarai');
-        }
+alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
+    
+    isSelesaiDaftar = true; 
+    indexKesSemasa = -1; // <--- TAMBAH BARIS INI JUGA (jika belum ada)
+    isEditMode = false;  // <--- TAMBAH BARIS INI DI SINI
+    
+    tukarView('senarai');
+}
 
         // --- KOD FUNGSI SIMPAN DRAF YANG DIBETULKAN ---
         function simpanDrafSistem() {
@@ -2969,42 +2973,46 @@ function bukaTab(tabId, elemenTab) {
                 memoriSenaraiKes.unshift(rekodDraf);
             }
             
-            alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
-            
-            isSelesaiDaftar = true; 
-            indexKesSemasa = -1;
-            
-            tukarView('senarai');
-            pergiKeTabBorang('tab1'); 
-        }
+alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
+    
+    isSelesaiDaftar = true; 
+    indexKesSemasa = -1;
+    isEditMode = false; // <--- TAMBAH BARIS INI DI SINI
+    
+    tukarView('senarai');
+    pergiKeTabBorang('tab1'); 
+}
 
         function hapusKesDidaftar(index) { if (confirm("Adakah anda pasti mahu memadam kes ini dari senarai tugasan?")) { memoriSenaraiKes.splice(index, 1); renderSenaraiTugas(); } }
 
-        function bukaKesDidaftar(index) {
-            isSelesaiDaftar = false;
-            isEditMode = true; // Penanda edit draf lama diaktifkan
-            indexKesSemasa = index;
-            
-            const kes = memoriSenaraiKes[index];
-            let noKesBersih = kes.noKes.split('<br>')[0].trim();
-            document.getElementById('noKes').value = noKesBersih;
-            
-            const isMajikan = kes.jenisAduan === 'Majikan';
-            document.getElementById('majikan').checked = isMajikan;
-            
-            let namaPengaduSenarai = kes.namaPengadu !== '(Nama tidak diisi)' ? kes.namaPengadu : '';
-            let namaDefendanSenarai = kes.namaDefendan !== '(Nama tidak diisi)' ? kes.namaDefendan : '';
-            if (namaPengaduSenarai.includes('<br>')) { namaPengaduSenarai = namaPengaduSenarai.split('<br>')[0]; }
-            if (namaDefendanSenarai.includes('<br>')) { namaDefendanSenarai = namaDefendanSenarai.split('<br>')[0]; }
+function bukaKesDidaftar(index) {
+    isSelesaiDaftar = false;
+    isEditMode = true; // Penanda edit draf lama diaktifkan
+    indexKesSemasa = index;
+    
+    const kes = memoriSenaraiKes[index];
+    let noKesBersih = kes.noKes.split('<br>')[0].trim();
+    document.getElementById('noKes').value = noKesBersih;
+    
+    const isMajikan = kes.jenisAduan === 'Majikan';
+    document.getElementById('majikan').checked = isMajikan;
+    
+    let namaPengaduSenarai = kes.namaPengadu !== '(Nama tidak diisi)' ? kes.namaPengadu : '';
+    let namaDefendanSenarai = kes.namaDefendan !== '(Nama tidak diisi)' ? kes.namaDefendan : '';
+    if (namaPengaduSenarai.includes('<br>')) { namaPengaduSenarai = namaPengaduSenarai.split('<br>')[0]; }
+    if (namaDefendanSenarai.includes('<br>')) { namaDefendanSenarai = namaDefendanSenarai.split('<br>')[0]; }
 
-            if(isMajikan) { document.getElementById('namaDefendan').value = namaPengaduSenarai; document.getElementById('namaPengadu').value = namaDefendanSenarai; } 
-            else { document.getElementById('namaPengadu').value = namaPengaduSenarai; document.getElementById('namaDefendan').value = namaDefendanSenarai; }
-            
-            if (kes.jenisAduan === 'Berkumpulan') { document.getElementById('aduanBerkumpulan').checked = true; } else { document.getElementById('aduanIndividu').checked = true; }
-            toggleAduan(); tukarPeranan();
-            tukarView('daftar'); pergiKeTabBorang('tab1');
-            setStatusBorang(true);
-        }
+    if(isMajikan) { document.getElementById('namaDefendan').value = namaPengaduSenarai; document.getElementById('namaPengadu').value = namaDefendanSenarai; } 
+    else { document.getElementById('namaPengadu').value = namaPengaduSenarai; document.getElementById('namaDefendan').value = namaDefendanSenarai; }
+    
+    if (kes.jenisAduan === 'Berkumpulan') { document.getElementById('aduanBerkumpulan').checked = true; } else { document.getElementById('aduanIndividu').checked = true; }
+    toggleAduan(); tukarPeranan();
+    
+    // UBAH DI SINI: Hantar parameter 'true' supaya borang tidak di-reset semasa buka draf
+    tukarView('daftar', true); 
+    pergiKeTabBorang('tab1');
+    setStatusBorang(true);
+}
 
         function toTitleCase(str) { if (!str || str === '-') return '-'; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
 
