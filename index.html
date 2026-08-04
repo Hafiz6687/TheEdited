@@ -2924,74 +2924,97 @@ alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem.");
     
     tukarView('senarai');
 }
-
-        // --- KOD FUNGSI SIMPAN DRAF YANG DIBETULKAN ---
-        function simpanDrafSistem() {
-            let noKesAsal = document.getElementById('noKes').value;
-            let noKesBersih = noKesAsal.split('<br>')[0].trim();
-
-            if (noKesBersih === "") {
-                alert("Sila pastikan No. Kes telah diisi dengan betul sebelum menyimpan draf.");
-                document.getElementById('noKes').focus();
-                return; 
-            }
-
-            const isMajikan = document.getElementById('majikan').checked;
-            
-            let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
-            let namaDefendanRaw = document.getElementById('namaDefendan').value || '(Nama tidak diisi)';
-            let namaPengaduFinal, namaDefendanFinal;
-
-            if (isMajikan) {
-                namaPengaduFinal = namaDefendanRaw;
-                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
-                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaPengaduFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
-                namaDefendanFinal = namaPengaduRaw;
+// FUNGSI BARU UNTUK KUMPUL SEMUA DATA BORANG
+function kumpulDataBorang() {
+    let formData = {};
+    // Ambil semua input, select dan textarea dalam kawasan pendaftaran
+    const inputs = document.getElementById('viewPendaftaranKes').querySelectorAll('input, select, textarea');
+    inputs.forEach(el => {
+        if (el.id) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                formData[el.id] = el.checked;
             } else {
-                namaPengaduFinal = namaPengaduRaw;
-                namaDefendanFinal = namaDefendanRaw;
-                const jenisDef = document.getElementById('jenisDaftarDefendan').value;
-                if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaDefendanFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+                formData[el.id] = el.value;
             }
+        }
+    });
+    
+    return {
+        inputs: formData,
+        tuntutanBiasa: JSON.parse(JSON.stringify(memoriTuntutan)),
+        tuntutanKetua: JSON.parse(JSON.stringify(memoriTuntutanKetua))
+    };
+}
+function simpanDrafSistem() {
+    let noKesAsal = document.getElementById('noKes').value;
+    let noKesBersih = noKesAsal.split('<br>')[0].trim();
 
-            const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
-            const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
-            const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
+    if (noKesBersih === "") {
+        alert("Sila pastikan No. Kes telah diisi dengan betul sebelum menyimpan draf.");
+        document.getElementById('noKes').focus();
+        return; 
+    }
 
-            const tagDraf = "<br><span style='background-color: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700;'>DRAF</span>";
-            const noKesDenganTag = noKesBersih + tagDraf;
+    const isMajikan = document.getElementById('majikan').checked;
+    
+    let namaPengaduRaw = document.getElementById('namaPengadu').value || '(Nama tidak diisi)';
+    let namaDefendanRaw = document.getElementById('namaDefendan').value || '(Nama tidak diisi)';
+    let namaPengaduFinal, namaDefendanFinal;
 
-            const rekodDraf = { 
-                noKes: noKesDenganTag, 
-                namaPengadu: namaPengaduFinal, 
-                namaDefendan: namaDefendanFinal, 
-                jenisAduan: jenisAduan, 
-                tarikh: tarikhHariIni 
-            };
+    if (isMajikan) {
+        namaPengaduFinal = namaDefendanRaw;
+        const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+        if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaPengaduFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+        namaDefendanFinal = namaPengaduRaw;
+    } else {
+        namaPengaduFinal = namaPengaduRaw;
+        namaDefendanFinal = namaDefendanRaw;
+        const jenisDef = document.getElementById('jenisDaftarDefendan').value;
+        if(jenisDef === 'SSM (Enterprise)') { const pemilik = document.getElementById('namaPemilikDefendan').value || ''; if(pemilik) namaDefendanFinal += `<br><span style="font-size: 0.85em; font-weight: normal;">Pemilik: ${pemilik}</span>`; }
+    }
 
-            let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.split('<br>')[0].trim() === noKesBersih);
+    const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
+    const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
+    const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
 
-            if (isEditMode) {
-                if (indeksSediaAda !== -1 && indeksSediaAda !== indexKesSemasa) {
-                    alert("AMARAN: No. Kes " + noKesBersih + " telah digunakan oleh kes lain. Sila masukkan nombor yang berbeza.");
-                    document.getElementById('noKes').focus();
-                    return;
-                }
-                memoriSenaraiKes[indexKesSemasa] = rekodDraf;
-            } else {
-                if (indeksSediaAda !== -1) {
-                    alert("AMARAN: No. Kes " + noKesBersih + " telah wujud! Sila masukkan No. Kes baharu supaya draf lama tidak tertindih.");
-                    document.getElementById('noKes').focus();
-                    return;
-                }
-                memoriSenaraiKes.unshift(rekodDraf);
-            }
-            
-alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
+    const tagDraf = "<br><span style='background-color: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700;'>DRAF</span>";
+    const noKesDenganTag = noKesBersih + tagDraf;
+
+    // TANGKAP SEMUA DATA DI SINI
+    const dataPenuh = kumpulDataBorang(); 
+
+    const rekodDraf = { 
+        noKes: noKesDenganTag, 
+        namaPengadu: namaPengaduFinal, 
+        namaDefendan: namaDefendanFinal, 
+        jenisAduan: jenisAduan, 
+        tarikh: tarikhHariIni,
+        dataBorang: dataPenuh // <-- MASUKKAN DATA KE DALAM REKOD
+    };
+
+    let indeksSediaAda = memoriSenaraiKes.findIndex(kes => kes.noKes.split('<br>')[0].trim() === noKesBersih);
+
+    if (isEditMode) {
+        if (indeksSediaAda !== -1 && indeksSediaAda !== indexKesSemasa) {
+            alert("AMARAN: No. Kes " + noKesBersih + " telah digunakan oleh kes lain. Sila masukkan nombor yang berbeza.");
+            document.getElementById('noKes').focus();
+            return;
+        }
+        memoriSenaraiKes[indexKesSemasa] = rekodDraf;
+    } else {
+        if (indeksSediaAda !== -1) {
+            alert("AMARAN: No. Kes " + noKesBersih + " telah wujud! Sila masukkan No. Kes baharu supaya draf lama tidak tertindih.");
+            document.getElementById('noKes').focus();
+            return;
+        }
+        memoriSenaraiKes.unshift(rekodDraf);
+    }
+    
+    alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran ini kemudian."); 
     
     isSelesaiDaftar = true; 
     indexKesSemasa = -1;
-    isEditMode = false; // <--- TAMBAH BARIS INI DI SINI
+    isEditMode = false;
     
     tukarView('senarai');
     pergiKeTabBorang('tab1'); 
@@ -3001,28 +3024,60 @@ alert("Maklumat draf telah berjaya disimpan. Anda boleh menyambung pendaftaran i
 
 function bukaKesDidaftar(index) {
     isSelesaiDaftar = false;
-    isEditMode = true; // Penanda edit draf lama diaktifkan
+    isEditMode = true; 
     indexKesSemasa = index;
     
     const kes = memoriSenaraiKes[index];
-    let noKesBersih = kes.noKes.split('<br>')[0].trim();
-    document.getElementById('noKes').value = noKesBersih;
     
-    const isMajikan = kes.jenisAduan === 'Majikan';
-    document.getElementById('majikan').checked = isMajikan;
-    
-    let namaPengaduSenarai = kes.namaPengadu !== '(Nama tidak diisi)' ? kes.namaPengadu : '';
-    let namaDefendanSenarai = kes.namaDefendan !== '(Nama tidak diisi)' ? kes.namaDefendan : '';
-    if (namaPengaduSenarai.includes('<br>')) { namaPengaduSenarai = namaPengaduSenarai.split('<br>')[0]; }
-    if (namaDefendanSenarai.includes('<br>')) { namaDefendanSenarai = namaDefendanSenarai.split('<br>')[0]; }
+    // SEMAK JIKA REKOD INI MEMPUNYAI DATA BORANG YANG DISIMPAN
+    if (kes.dataBorang) {
+        // 1. Suntik semula nilai ke dalam input
+        const formData = kes.dataBorang.inputs;
+        for (const id in formData) {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    el.checked = formData[id];
+                } else {
+                    el.value = formData[id];
+                }
+            }
+        }
+        
+        // 2. Suntik semula memori tuntutan kewangan
+        memoriTuntutan = kes.dataBorang.tuntutanBiasa ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanBiasa)) : [];
+        memoriTuntutanKetua = kes.dataBorang.tuntutanKetua ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanKetua)) : [];
+        renderJadualTuntutan();
+        
+        // 3. Panggil fungsi UI untuk kemaskini paparan yang bergantung pada radio/checkbox
+        tukarPeranan();
+        kawalJenisDaftarPengadu();
+        kawalJenisDaftarDefendan();
+        toggleAduan();
+        semakWakilLengkap();
+        janaKenyataanAwal();
+        
+    } else {
+        // JIKA TIADA DATA (Legacy fallback)
+        let noKesBersih = kes.noKes.split('<br>')[0].trim();
+        document.getElementById('noKes').value = noKesBersih;
+        
+        const isMajikan = kes.jenisAduan === 'Majikan';
+        document.getElementById('majikan').checked = isMajikan;
+        
+        let namaPengaduSenarai = kes.namaPengadu !== '(Nama tidak diisi)' ? kes.namaPengadu : '';
+        let namaDefendanSenarai = kes.namaDefendan !== '(Nama tidak diisi)' ? kes.namaDefendan : '';
+        if (namaPengaduSenarai.includes('<br>')) { namaPengaduSenarai = namaPengaduSenarai.split('<br>')[0]; }
+        if (namaDefendanSenarai.includes('<br>')) { namaDefendanSenarai = namaDefendanSenarai.split('<br>')[0]; }
 
-    if(isMajikan) { document.getElementById('namaDefendan').value = namaPengaduSenarai; document.getElementById('namaPengadu').value = namaDefendanSenarai; } 
-    else { document.getElementById('namaPengadu').value = namaPengaduSenarai; document.getElementById('namaDefendan').value = namaDefendanSenarai; }
+        if(isMajikan) { document.getElementById('namaDefendan').value = namaPengaduSenarai; document.getElementById('namaPengadu').value = namaDefendanSenarai; } 
+        else { document.getElementById('namaPengadu').value = namaPengaduSenarai; document.getElementById('namaDefendan').value = namaDefendanSenarai; }
+        
+        if (kes.jenisAduan === 'Berkumpulan') { document.getElementById('aduanBerkumpulan').checked = true; } else { document.getElementById('aduanIndividu').checked = true; }
+        
+        toggleAduan(); tukarPeranan();
+    }
     
-    if (kes.jenisAduan === 'Berkumpulan') { document.getElementById('aduanBerkumpulan').checked = true; } else { document.getElementById('aduanIndividu').checked = true; }
-    toggleAduan(); tukarPeranan();
-    
-    // UBAH DI SINI: Hantar parameter 'true' supaya borang tidak di-reset semasa buka draf
     tukarView('daftar', true); 
     pergiKeTabBorang('tab1');
     setStatusBorang(true);
