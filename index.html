@@ -1873,13 +1873,19 @@ function tindakanSebutan() {
             document.getElementById('menuCetakKenyataan').style.display = 'none';
             document.getElementById('menuDaftar').style.display = 'none';
             
-            // Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
+// Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
             const menuCetakG1 = document.getElementById('menuCetakG1');
             menuCetakG1.style.display = 'flex';
             menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
             menuCetakG1.onclick = function() {
                 document.getElementById('actionMenu').classList.remove('show');
                 window.print();
+                
+                // --- TAMBAH KOD INI UNTUK HILANGKAN BUTANG SELEPAS CETAK ---
+                setTimeout(() => {
+                    menuCetakG1.style.display = 'none';
+                }, 500);
+                // -----------------------------------------------------------
             };
 
             // Tambahkan alert di sini sebelum modal dipaparkan
