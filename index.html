@@ -1678,6 +1678,7 @@ document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-
             document.getElementById('mk_masa_sebutan').value = '';
             semakButangSebutan();
 
+ // Cari bahagian ini dalam fungsi bukaMaklumatKes(index):
             const isDraf = kes.noKes.includes('DRAF');
             const kadSebutan = document.getElementById('kad_sebutan_kes');
             
@@ -1688,6 +1689,17 @@ document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-
                     kadSebutan.style.display = 'flex'; 
                 }
             }
+
+            // --- TAMBAH KOD INI DI SINI ---
+            const btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
+            if (btnKemaskiniPendaftaran) {
+                if (isDraf) {
+                    btnKemaskiniPendaftaran.style.display = 'inline-block'; // Tunjuk butang jika kes masih DRAF
+                } else {
+                    btnKemaskiniPendaftaran.style.display = 'none'; // Sembunyikan butang jika kes SAH DIDAFTARKAN
+                }
+            }
+            // ------------------------------
 
             document.getElementById('btnEditRekodKes').onclick = function() {
                 bukaKesDidaftar(indexKesSemasa);
