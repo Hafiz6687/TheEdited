@@ -3005,6 +3005,10 @@ function resetBorangPendaftaran() {
         tukarPeranan(); 
         kawalJenisDaftarPengadu();
         kawalJenisDaftarDefendan();
+        
+        // --- TAMBAH BARIS INI ---
+        kawalJenisAduanTuntutan(); // Paksa sistem semak dan sembunyikan semula jadual tuntutan
+        // ------------------------
     }
 
 function tukarView(jenisView, dariBukaKes = false) {
