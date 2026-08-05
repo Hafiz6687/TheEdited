@@ -3295,6 +3295,19 @@ function bukaKesDidaftar(index) {
         if(formData['jenisDaftarDefendan']) document.getElementById('jenisDaftarDefendan').value = formData['jenisDaftarDefendan'];
         kawalJenisDaftarDefendan();
         
+        // --- LOGIK KEKALKAN STATUS EDIT KENYATAAN MANUAL ---
+        isKenyataanEdited = formData['isKenyataanEdited'] === true || formData['isKenyataanEdited'] === "true";
+        const txtKenyataan = document.getElementById('kenyataanAwal');
+        const btnKenyataan = document.getElementById('btnEditKenyataan');
+        if (isKenyataanEdited) {
+            if (txtKenyataan) { txtKenyataan.removeAttribute('readonly'); txtKenyataan.style.backgroundColor = '#ffffff'; txtKenyataan.style.border = '1px solid var(--primary-blue)'; }
+            if (btnKenyataan) btnKenyataan.innerHTML = '🔒 Kunci Kenyataan';
+        } else {
+            if (txtKenyataan) { txtKenyataan.setAttribute('readonly', 'true'); txtKenyataan.style.backgroundColor = '#f8fafc'; txtKenyataan.style.border = '1px solid var(--border-color)'; }
+            if (btnKenyataan) btnKenyataan.innerHTML = '✏️ Edit Kenyataan';
+        }
+        // ---------------------------------------------------
+
         // LANGKAH 2: Kosongkan borang (reset radio/checkbox) dan Suntik Semua Data
         const allInputs = document.getElementById('viewPendaftaranKes').querySelectorAll('input, select, textarea');
         allInputs.forEach(el => {
@@ -3305,9 +3318,19 @@ function bukaKesDidaftar(index) {
             const elById = document.getElementById(key);
             if (elById) {
                 if (elById.type === 'checkbox') {
-                    elById.checked = formData[key];
+                    elById.checked = formData[key] === true || formData[key] === "true";
                 } else if (elById.type === 'radio') {
                     // Diuruskan guna 'name' di bawah
+                } else if (elById.tagName === 'SELECT') {
+                    // LOGIK PINTAR: Wujudkan option jika ia tak wujud (Untuk Negeri/Bandar)
+                    let optionExists = Array.from(elById.options).some(opt => opt.value === formData[key]);
+                    if (!optionExists && formData[key] !== "") {
+                        const newOption = document.createElement('option');
+                        newOption.value = formData[key];
+                        newOption.text = formData[key];
+                        elById.add(newOption);
+                    }
+                    elById.value = formData[key];
                 } else {
                     elById.value = formData[key];
                 }
