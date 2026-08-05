@@ -1756,7 +1756,6 @@ function tindakanSebutan() {
                 const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
                 
                 if (isMajikan) {
-                    // LOGIK JIKA PENGADU ADALAH MAJIKAN
                     let namaWakil = inputs['namaWakilMajikan'] || '[NAMA WAKIL]';
                     let kpWakil = inputs['noMyKadWakil'] || '_________________________';
                     let namaSyarikat = inputs['namaDefendan'] || '[NAMA SYARIKAT]';
@@ -1767,17 +1766,14 @@ function tindakanSebutan() {
                     
                     namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
 
-                    // Perenggan dinamik untuk Majikan
                     perengganPengenalan = `Bahawasanya saya, <strong>${namaWakil.toUpperCase()}</strong> (No. MyKad: <strong>${kpWakil}</strong>) mewakili majikan <strong>${namaSyarikat.toUpperCase()}</strong> (No. Pendaftaran: <strong>${noPendSyarikat}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
                     
                     namaTandatangan = namaWakil.toUpperCase();
                     kpTandatangan = kpWakil;
                 } else {
-                    // LOGIK JIKA PENGADU ADALAH PEKERJA (Individu / Berkumpulan)
                     namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
                     kpP = inputs['noPendPengadu'] || '_________________________';
                     
-                    // Semak jenis ID (MyKad atau Pasport)
                     let jenisId = inputs['jenisDaftarPengadu'] === 'Pasport' ? 'No. Pasport' : 'No. MyKad';
                     
                     let almt = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join(', ');
@@ -1785,14 +1781,12 @@ function tindakanSebutan() {
                     
                     namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
 
-                    // Perenggan dinamik untuk Pekerja
                     perengganPengenalan = `Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (${jenisId}: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
                     
                     namaTandatangan = namaP.toUpperCase();
                     kpTandatangan = kpP;
                 }
             } else {
-                // Fallback jika tiada rekod data yang terperinci (kes lama)
                 namaP = kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase();
                 kpP = "_________________________";
                 alamatP = "____________________________________________________";
@@ -1801,6 +1795,23 @@ function tindakanSebutan() {
                 namaTandatangan = namaP;
                 kpTandatangan = kpP;
             }
+
+            // --- KOD AUTO EXTRACT BAHARU ---
+            // 1. Tarikh Hari Ini
+            const t = new Date();
+            const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+            const tarikhHariIniFormat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
+            
+            // 2. Tempat Lalai
+            const tempatDaftar = "Pejabat Tenaga Kerja Kluang";
+
+            // 3. Nama Pegawai (Tarik dari profil sidebar)
+            let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+            const namaPegawai = namaPegawaiRaw.toUpperCase();
+            
+            // 4. Jawatan Pegawai
+            const jawatanPegawai = "Pegawai Tenaga Kerja";
+            // ---------------------------------
 
             // Stuktur HTML Rasmi Akuan Penarikan Balik Kes
             const htmlTarikBalik = `
@@ -1848,15 +1859,15 @@ function tindakanSebutan() {
                             ...................................................................<br>
                             Nama: <strong>${namaTandatangan}</strong><br>
                             No. KP / Pasport: ${kpTandatangan}<br>
-                            Tarikh: _______________________<br>
-                            Tempat: _______________________
+                            Tarikh: <strong>${tarikhHariIniFormat}</strong><br>
+                            Tempat: <strong>${tempatDaftar}</strong>
                         </div>
                         <div>
                             <strong>Dihadapan (Saksi / Pegawai):</strong><br><br><br><br>
                             ...................................................................<br>
-                            Nama: _______________________<br>
-                            Jawatan: ____________________<br>
-                            Tarikh: _______________________<br>
+                            Nama: <strong>${namaPegawai}</strong><br>
+                            Jawatan: <strong>${jawatanPegawai}</strong><br>
+                            Tarikh: <strong>${tarikhHariIniFormat}</strong><br>
                             <br>
                             Cop Rasmi (jika berkenaan):
                         </div>
@@ -1873,7 +1884,7 @@ function tindakanSebutan() {
             document.getElementById('menuCetakKenyataan').style.display = 'none';
             document.getElementById('menuDaftar').style.display = 'none';
             
-// Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
+            // Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
             const menuCetakG1 = document.getElementById('menuCetakG1');
             menuCetakG1.style.display = 'flex';
             menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
@@ -1881,11 +1892,10 @@ function tindakanSebutan() {
                 document.getElementById('actionMenu').classList.remove('show');
                 window.print();
                 
-                // --- TAMBAH KOD INI UNTUK HILANGKAN BUTANG SELEPAS CETAK ---
+                // Menghilangkan butang selepas ditekan
                 setTimeout(() => {
                     menuCetakG1.style.display = 'none';
                 }, 500);
-                // -----------------------------------------------------------
             };
 
             // Tambahkan alert di sini sebelum modal dipaparkan
