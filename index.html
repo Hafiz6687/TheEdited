@@ -618,7 +618,16 @@ Portal rasmi : jtksm.mohr.gov.my
                     </div>
                 </div>
             </div>
-
+<!-- BAHAGIAN BARU: Kenyataan Pengadu -->
+<div class="card full-width">
+    <div class="card-header">Kenyataan Pengadu & Kronologi Kes</div>
+    <div class="card-body">
+        <div class="info-value" id="mk_kenyataan_pengadu" style="white-space: pre-wrap; text-align: justify; line-height: 1.6;">
+            <!-- Teks kenyataan akan dijana oleh JS di sini -->
+            -
+        </div>
+    </div>
+</div>
             <!-- BAHAGIAN 2: Maklumat Pengadu & Tuntutan (3 Grid) -->
             <div class="card full-width">
                 <div class="card-header">Maklumat Pengadu</div>
@@ -1471,7 +1480,24 @@ Portal rasmi : jtksm.mohr.gov.my
 
             let tempatKerjaPaparan = '';
             const alamatBerbeza = document.getElementById('alamatBerbeza').checked;
-            
+            // Tambah kod ini di dalam fungsi bukaMaklumatKes(index), 
+// contohnya selepas anda menetapkan nilai-nilai 'Maklumat Kes' atau sebelum penetapan HTML Pengadu.
+
+let kenyataanPenuh = "-";
+
+// Semak jika ada data borang yang disimpan dalam draf
+if (kes.dataBorang && kes.dataBorang.inputs) {
+    const kenyataanAwal = kes.dataBorang.inputs['kenyataanAwal'] || "";
+    const kronologiKes = kes.dataBorang.inputs['kronologiKes'] || "";
+    
+    // Gabungkan kenyataan awal dan kronologi
+    if (kenyataanAwal || kronologiKes) {
+        kenyataanPenuh = (kenyataanAwal + "\n\n" + kronologiKes).trim();
+    }
+}
+
+// Masukkan teks ke dalam HTML yang kita buat pada Langkah 1
+document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-";
             if (!alamatBerbeza) {
                 const syarikatNama = document.getElementById('namaDefendan').value.trim();
                 const a1 = document.getElementById('alamatDefendan1').value.trim();
