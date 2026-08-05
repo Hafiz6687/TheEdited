@@ -1423,7 +1423,7 @@ Portal rasmi : jtksm.mohr.gov.my
             renderSenaraiTugas();
         });
 
-        function bukaMaklumatKes(index) {
+function bukaMaklumatKes(index) {
             indexKesSemasa = index;
             const kes = memoriSenaraiKes[index];
             const isMajikan = kes.jenisAduan === 'Majikan';
@@ -1434,44 +1434,57 @@ Portal rasmi : jtksm.mohr.gov.my
             document.getElementById('mk_tarikh_sah').innerText = kes.tarikh; 
             document.getElementById('mk_tarikh_tugas').innerText = kes.tarikh; 
             
+            // =====================================================================
+            // PEMBETULAN KRITIKAL: Tarik data dari MEMORI, bukan dari Borang Kosong
+            // =====================================================================
+            let dataSistem = {};
+            if (kes.dataBorang && kes.dataBorang.inputs) {
+                dataSistem = kes.dataBorang.inputs;
+            } else {
+                // Fallback jika kes Dummy (tiada dataBorang)
+                document.querySelectorAll('#viewPendaftaranKes input, #viewPendaftaranKes select, #viewPendaftaranKes textarea').forEach(el => {
+                    if (el.id) dataSistem[el.id] = el.value;
+                });
+            }
+
             const p_nama = kes.namaPengadu.replace(/<br>.*$/g, '');
-            const p_id = document.getElementById('noPendPengadu').value.trim() || "-";
+            const p_id = dataSistem['noPendPengadu'] || "-";
             
-            const p_a1 = document.getElementById('alamatPengadu1').value.trim();
-            const p_a2 = document.getElementById('alamatPengadu2').value.trim();
-            const p_a3 = document.getElementById('alamatPengadu3').value.trim();
-            const p_pos = document.getElementById('poskodPengadu').value.trim();
-            const p_bdr = document.getElementById('bandarPengadu').value.trim();
-            const p_ngr = document.getElementById('negeriPengadu').value.trim();
+            const p_a1 = dataSistem['alamatPengadu1'] || "";
+            const p_a2 = dataSistem['alamatPengadu2'] || "";
+            const p_a3 = dataSistem['alamatPengadu3'] || "";
+            const p_pos = dataSistem['poskodPengadu'] || "";
+            const p_bdr = dataSistem['bandarPengadu'] || "";
+            const p_ngr = dataSistem['negeriPengadu'] || "";
             let p_alamatArr = [p_a1, p_a2, p_a3].filter(Boolean);
             let p_posBdr = [p_pos, p_bdr].filter(Boolean).join(' ');
             if(p_posBdr) p_alamatArr.push(p_posBdr);
             if(p_ngr) p_alamatArr.push(p_ngr);
             const p_alamat = p_alamatArr.length > 0 ? p_alamatArr.join('<br>') : "-";
 
-            const p_tel = document.getElementById('telPengadu').value.trim() || "-";
-            const p_hp = document.getElementById('hpPengadu').value.trim() || "-";
-            const p_emel = document.getElementById('emelPengadu').value.trim() || "-";
-            const p_bil_pengadu = document.getElementById('bilanganPengadu').value ? document.getElementById('bilanganPengadu').value + " Orang" : "-";
+            const p_tel = dataSistem['telPengadu'] || "-";
+            const p_hp = dataSistem['hpPengadu'] || "-";
+            const p_emel = dataSistem['emelPengadu'] || "-";
+            const p_bil_pengadu = dataSistem['bilanganPengadu'] ? dataSistem['bilanganPengadu'] + " Orang" : "-";
 
             const d_nama = kes.namaDefendan;
-            const d_id = document.getElementById('noPendDefendan').value.trim() || "-";
+            const d_id = dataSistem['noPendDefendan'] || "-";
             
-            const d_a1 = document.getElementById('alamatDefendan1').value.trim();
-            const d_a2 = document.getElementById('alamatDefendan2').value.trim();
-            const d_a3 = document.getElementById('alamatDefendan3').value.trim();
-            const d_pos = document.getElementById('poskodDefendan').value.trim();
-            const d_bdr = document.getElementById('bandarDefendan').value.trim();
-            const d_ngr = document.getElementById('negeriDefendan').value.trim();
+            const d_a1 = dataSistem['alamatDefendan1'] || "";
+            const d_a2 = dataSistem['alamatDefendan2'] || "";
+            const d_a3 = dataSistem['alamatDefendan3'] || "";
+            const d_pos = dataSistem['poskodDefendan'] || "";
+            const d_bdr = dataSistem['bandarDefendan'] || "";
+            const d_ngr = dataSistem['negeriDefendan'] || "";
             let d_alamatArr = [d_a1, d_a2, d_a3].filter(Boolean);
             let d_posBdr = [d_pos, d_bdr].filter(Boolean).join(' ');
             if(d_posBdr) d_alamatArr.push(d_posBdr);
             if(d_ngr) d_alamatArr.push(d_ngr);
             const d_alamat = d_alamatArr.length > 0 ? d_alamatArr.join('<br>') : "-";
 
-            const d_tel = document.getElementById('telDefendan').value.trim() || "-";
-            const d_hp = document.getElementById('hpDefendan').value.trim() || "-";
-            const d_emel = document.getElementById('emelDefendan').value.trim() || "-";
+            const d_tel = dataSistem['telDefendan'] || "-";
+            const d_hp = dataSistem['hpDefendan'] || "-";
+            const d_emel = dataSistem['emelDefendan'] || "-";
 
             const regexMyKad = /^\d{6}-?\d{2}-?\d{4}$/;
             const d_isMyKad = regexMyKad.test(d_id);
@@ -1479,48 +1492,35 @@ Portal rasmi : jtksm.mohr.gov.my
             const p_isMyKad = /^\d{6}-?\d{2}-?\d{4}$/.test(p_id);
             const lbl_p_id = p_isMyKad ? 'No. MyKad' : 'No. Passport';
 
+            // Tarik Kenyataan dari Memori
+            let kenyataanPenuh = "-";
+            if (kes.dataBorang && kes.dataBorang.inputs) {
+                const kenyataanAwal = kes.dataBorang.inputs['kenyataanAwal'] || "";
+                const kronologiKes = kes.dataBorang.inputs['kronologiKes'] || "";
+                if (kenyataanAwal || kronologiKes) {
+                    kenyataanPenuh = (kenyataanAwal + "\n\n" + kronologiKes).trim();
+                }
+            }
+            document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-";
+
             let tempatKerjaPaparan = '';
-            const alamatBerbeza = document.getElementById('alamatBerbeza').checked;
-            // Tambah kod ini di dalam fungsi bukaMaklumatKes(index), 
-// contohnya selepas anda menetapkan nilai-nilai 'Maklumat Kes' atau sebelum penetapan HTML Pengadu.
-
-let kenyataanPenuh = "-";
-
-// Semak jika ada data borang yang disimpan dalam draf
-if (kes.dataBorang && kes.dataBorang.inputs) {
-    const kenyataanAwal = kes.dataBorang.inputs['kenyataanAwal'] || "";
-    const kronologiKes = kes.dataBorang.inputs['kronologiKes'] || "";
-    
-    // Gabungkan kenyataan awal dan kronologi
-    if (kenyataanAwal || kronologiKes) {
-        kenyataanPenuh = (kenyataanAwal + "\n\n" + kronologiKes).trim();
-    }
-}
-
-// Masukkan teks ke dalam HTML yang kita buat pada Langkah 1
-document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-";
+            const alamatBerbeza = dataSistem['alamatBerbeza'] === true || dataSistem['alamatBerbeza'] === "true";
+            
             if (!alamatBerbeza) {
-                const syarikatNama = document.getElementById('namaDefendan').value.trim();
-                const a1 = document.getElementById('alamatDefendan1').value.trim();
-                const a2 = document.getElementById('alamatDefendan2').value.trim();
-                const a3 = document.getElementById('alamatDefendan3').value.trim();
-                const pos = document.getElementById('poskodDefendan').value.trim();
-                const bdr = document.getElementById('bandarDefendan').value.trim();
-                const ngr = document.getElementById('negeriDefendan').value.trim();
-                
-                let alamatArr = [syarikatNama, a1, a2, a3].filter(Boolean);
-                let posBdr = [pos, bdr].filter(Boolean).join(' ');
+                const syarikatNama = dataSistem['namaDefendan'] || d_nama.replace(/<br>.*$/g, '');
+                let alamatArr = [syarikatNama, d_a1, d_a2, d_a3].filter(Boolean);
+                let posBdr = [d_pos, d_bdr].filter(Boolean).join(' ');
                 if(posBdr) alamatArr.push(posBdr);
-                if(ngr) alamatArr.push(ngr);
+                if(d_ngr) alamatArr.push(d_ngr);
                 tempatKerjaPaparan = alamatArr.join(',<br>') || '-'; 
             } else {
-                const namaTK = document.getElementById('namaTempatKerja').value.trim();
-                const a1 = document.getElementById('alamatKerja1').value.trim();
-                const a2 = document.getElementById('alamatKerja2').value.trim();
-                const a3 = document.getElementById('alamatKerja3').value.trim();
-                const pos = document.getElementById('poskodKerja').value.trim();
-                const bdr = document.getElementById('bandarKerja').value.trim();
-                const ngr = document.getElementById('negeriKerja').value.trim();
+                const namaTK = dataSistem['namaTempatKerja'] || "";
+                const a1 = dataSistem['alamatKerja1'] || "";
+                const a2 = dataSistem['alamatKerja2'] || "";
+                const a3 = dataSistem['alamatKerja3'] || "";
+                const pos = dataSistem['poskodKerja'] || "";
+                const bdr = dataSistem['bandarKerja'] || "";
+                const ngr = dataSistem['negeriKerja'] || "";
                 
                 let alamatArr = [namaTK, a1, a2, a3].filter(Boolean);
                 let posBdr = [pos, bdr].filter(Boolean).join(' ');
@@ -1648,10 +1648,15 @@ document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-
             const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
             tbodyTuntutan.innerHTML = '';
             
-            let senaraiTuntutanSemasa = memoriTuntutan.length > 0 ? memoriTuntutan : [
-                {jenis: "Baki Gaji", keterangan: "(MEI 2026)", jumlah: "2645.00"},
-                {jenis: "Baki Gaji", keterangan: "(JUN 2026)", jumlah: "1600.00"}
-            ];
+            let senaraiTuntutanSemasa = [];
+            if (kes.dataBorang && kes.dataBorang.tuntutanBiasa && kes.dataBorang.tuntutanBiasa.length > 0) {
+                senaraiTuntutanSemasa = kes.dataBorang.tuntutanBiasa;
+            } else if (!kes.dataBorang) {
+                senaraiTuntutanSemasa = [
+                    {jenis: "Baki Gaji", keterangan: "(MEI 2026)", jumlah: "2645.00"},
+                    {jenis: "Baki Gaji", keterangan: "(JUN 2026)", jumlah: "1600.00"}
+                ];
+            }
 
             let jumlahKeseluruhan = 0;
             senaraiTuntutanSemasa.forEach((item, idx) => {
@@ -1679,7 +1684,6 @@ document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-
             document.getElementById('mk_masa_sebutan').value = '';
             semakButangSebutan();
 
- // Cari bahagian ini dalam fungsi bukaMaklumatKes(index):
             const isDraf = kes.noKes.includes('DRAF');
             const kadSebutan = document.getElementById('kad_sebutan_kes');
             
@@ -1691,16 +1695,14 @@ document.getElementById('mk_kenyataan_pengadu').innerText = kenyataanPenuh || "-
                 }
             }
 
-            // --- TAMBAH KOD INI DI SINI ---
             const btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
             if (btnKemaskiniPendaftaran) {
                 if (isDraf) {
-                    btnKemaskiniPendaftaran.style.display = 'inline-block'; // Tunjuk butang jika kes masih DRAF
+                    btnKemaskiniPendaftaran.style.display = 'inline-block'; 
                 } else {
-                    btnKemaskiniPendaftaran.style.display = 'none'; // Sembunyikan butang jika kes SAH DIDAFTARKAN
+                    btnKemaskiniPendaftaran.style.display = 'none'; 
                 }
             }
-            // ------------------------------
 
             document.getElementById('btnEditRekodKes').onclick = function() {
                 bukaKesDidaftar(indexKesSemasa);
