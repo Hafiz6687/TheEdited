@@ -3011,6 +3011,30 @@ function tukarView(jenisView, dariBukaKes = false) {
     const tajukHalaman = document.getElementById('tajukHalamanAtas');
     const btnCetakHeader = document.getElementById('butangCetakHeader');
 
+    // --- LOGIK PINTAR UNTUK MENGELAKKAN DATA HILANG & MEMUDAHKAN KES B, C... ---
+    if (jenisView === 'daftar' && !dariBukaKes) {
+        if (!isSelesaiDaftar) {
+            // Semak jika ada data pengadu atau defendan yang sedang diisi
+            let adaData = document.getElementById('namaPengadu').value.trim() !== '' || document.getElementById('namaDefendan').value.trim() !== '';
+            
+            if (adaData) {
+                // Beri amaran berbeza mengikut mod (Edit Draf vs Pendaftaran Baharu)
+                let msg = isEditMode ? 
+                    "Anda sedang mengemaskini draf kes sedia ada.\n\nAdakah anda pasti mahu membatalkan kemaskini dan MENGOSONGKAN borang untuk mendaftar kes baharu?" : 
+                    "Borang pendaftaran masih mengandungi maklumat yang belum disimpan.\n\nAdakah anda pasti mahu MENGOSONGKANNYA untuk mendaftar kes baharu?";
+                
+                if (!confirm(msg)) {
+                    return; // Jika Cancel, batal navigasi dan kekal di borang semasa (Kes A)
+                }
+            }
+        }
+        // Jika pengguna tekan OK (atau borang memang kosong / sudah selesai daftar Kes A), 
+        // kosongkan sepenuhnya untuk Kes B (Tuntutan akan auto tersembunyi).
+        resetBorangPendaftaran();
+        isSelesaiDaftar = false;
+    }
+    // -------------------------------------------------------------------------
+
     navSenarai.classList.remove('active');
     navDaftar.classList.remove('active');
 
@@ -3030,13 +3054,6 @@ function tukarView(jenisView, dariBukaKes = false) {
         tajukHalaman.innerHTML = 'Pendaftaran Kes Buruh';
         btnCetakHeader.style.display = 'flex';
         setStatusBorang(false);
-        
-        // KEMASKINI: Hanya kosongkan borang JIKA pendaftaran/draf benar-benar telah selesai disimpan/didaftar.
-        // Ini menghalang data dari hilang jika pengguna terklik menu sidebar.
-        if (isSelesaiDaftar === true) {
-            resetBorangPendaftaran();
-            isSelesaiDaftar = false; 
-        }
         
         pergiKeTabBorang('tab1');
     }
