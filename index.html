@@ -3021,9 +3021,9 @@ function tukarView(jenisView, dariBukaKes = false) {
         btnCetakHeader.style.display = 'flex';
         setStatusBorang(false);
         
-        // LOGIK BARU: Kosongkan borang jika pendaftaran selesai, 
-        // ATAU jika pengguna klik dari sidebar ketika masih dalam Mode Edit yang terbengkalai
-        if (isSelesaiDaftar === true || (!dariBukaKes && isEditMode === true)) {
+        // KEMASKINI: Hanya kosongkan borang JIKA pendaftaran/draf benar-benar telah selesai disimpan/didaftar.
+        // Ini menghalang data dari hilang jika pengguna terklik menu sidebar.
+        if (isSelesaiDaftar === true) {
             resetBorangPendaftaran();
             isSelesaiDaftar = false; 
         }
