@@ -2979,39 +2979,57 @@ function resetBorangPendaftaran() {
                 const checkboxes = bekasBorang.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(cb => cb.checked = false);
 
-                const jantinaRadios = bekasBorang.querySelectorAll('input[name="jantinaPengadu"], input[name="jantinaWakil"]');
-                jantinaRadios.forEach(radio => radio.checked = false);
+                // --- PEMBETULAN: Kosongkan SEMUA butang radio terlebih dahulu ---
+                const allRadios = bekasBorang.querySelectorAll('input[type="radio"]');
+                allRadios.forEach(radio => radio.checked = false);
                 
+                // --- PEMBETULAN: Set semula nilai 'Default' mengikut HTML asal ---
                 const aduanIndividu = document.getElementById('aduanIndividu');
                 if(aduanIndividu) aduanIndividu.checked = true;
+
+                const noKontrak = document.querySelector('input[name="adaKontrak"][value="Tidak"]');
+                if(noKontrak) noKontrak.checked = true;
+
+                const noPenyata = document.querySelector('input[name="adaPenyata"][value="Tidak"]');
+                if(noPenyata) noPenyata.checked = true;
+
+                const noElaun = document.querySelector('input[name="adaElaun"][value="Tidak"]');
+                if(noElaun) noElaun.checked = true;
+                // Waktu Kerja & Hari Kerja dibiarkan 'un-ticked'
             }
 
-// --- KOD TAMBAHAN UNTUK TUTUP SEMULA KOTAK-KOTAK YANG TERBUKA ---
-        document.getElementById('kandunganMaklumatPerkhidmatan').style.display = 'none';
-        document.getElementById('labelTogolPerkhidmatan').innerHTML = '▼ Buka';
-        document.getElementById('labelTogolPerkhidmatan').style.backgroundColor = '#f1f5f9';
-        document.getElementById('labelTogolPerkhidmatan').style.color = 'var(--text-muted)';
-        
-        document.getElementById('ruanganJenisPerniagaan').style.display = 'none';
-        document.getElementById('ruanganSektorLain').style.display = 'none';
-        
-        document.getElementById('ruanganElaunWrapper').style.display = 'none';
-        document.getElementById('btnTambahElaun').style.display = 'none';
-        document.getElementById('senaraiElaun').innerHTML = '';
-        // ----------------------------------------------------------------
+            // --- KOD TAMBAHAN UNTUK TUTUP SEMULA KOTAK-KOTAK YANG TERBUKA ---
+            document.getElementById('kandunganMaklumatPerkhidmatan').style.display = 'none';
+            document.getElementById('labelTogolPerkhidmatan').innerHTML = '▼ Buka';
+            document.getElementById('labelTogolPerkhidmatan').style.backgroundColor = '#f1f5f9';
+            document.getElementById('labelTogolPerkhidmatan').style.color = 'var(--text-muted)';
+            
+            // Sembunyikan semula kotak input Waktu Kerja & Hari Kerja
+            document.getElementById('ruanganWaktuTetap').style.display = 'none';
+            document.getElementById('ruanganWaktuTidakTetap').style.display = 'none';
+            document.getElementById('ruanganHariTetap').style.display = 'none';
+            document.getElementById('ruanganHariTidakTetap').style.display = 'none';
+            
+            document.getElementById('ruanganJenisPerniagaan').style.display = 'none';
+            document.getElementById('ruanganSektorLain').style.display = 'none';
+            
+            document.getElementById('ruanganElaunWrapper').style.display = 'none';
+            document.getElementById('btnTambahElaun').style.display = 'none';
+            document.getElementById('senaraiElaun').innerHTML = '';
+            // ----------------------------------------------------------------
 
-        // --- TAMBAH KOD INI UNTUK SUNTIK NO KES AUTO-INCREMENT ---
-        document.getElementById('noKes').value = janaNoKesBaru();
-        // ---------------------------------------------------------
+            // --- TAMBAH KOD INI UNTUK SUNTIK NO KES AUTO-INCREMENT ---
+            document.getElementById('noKes').value = janaNoKesBaru();
+            // ---------------------------------------------------------
 
-        tukarPeranan(); 
-        kawalJenisDaftarPengadu();
-        kawalJenisDaftarDefendan();
-        
-        // --- TAMBAH BARIS INI ---
-        kawalJenisAduanTuntutan(); // Paksa sistem semak dan sembunyikan semula jadual tuntutan
-        // ------------------------
-    }
+            tukarPeranan(); 
+            kawalJenisDaftarPengadu();
+            kawalJenisDaftarDefendan();
+            
+            // --- TAMBAH BARIS INI ---
+            kawalJenisAduanTuntutan(); // Paksa sistem semak dan sembunyikan semula jadual tuntutan
+            // ------------------------
+        }
 
 function tukarView(jenisView, dariBukaKes = false) {
     const navSenarai = document.getElementById('navSenarai');
