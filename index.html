@@ -3093,21 +3093,23 @@ function kumpulDataBorang() {
     let formData = {};
     const inputs = document.getElementById('viewPendaftaranKes').querySelectorAll('input, select, textarea');
     inputs.forEach(el => {
-        // Abaikan elemen tanpa id atau name
         if (!el.id && !el.name) return; 
 
-        let key = el.id || el.name; 
-
         if (el.type === 'radio') {
-            if (el.checked) formData[key] = el.value;
+            // MESTI guna name untuk radio button supaya nilai disimpan dengan betul
+            if (el.checked) formData[el.name] = el.value;
         } else if (el.type === 'checkbox') {
+            let key = el.id || el.name;
             formData[key] = el.checked;
         } else {
+            let key = el.id || el.name;
             formData[key] = el.value;
         }
     });
     
-    // Simpan senarai elaun secara manual kerana ia dijana secara dinamik (tiada id/name tetap)
+    // Simpan status edit kenyataan supaya teks manual tidak ditindih
+    formData['isKenyataanEdited'] = isKenyataanEdited;
+
     let senaraiElaunDinamik = [];
     document.querySelectorAll('#senaraiElaun > div').forEach(div => {
         let jenis = div.querySelector('.input-elaun-jenis')?.value || '';
