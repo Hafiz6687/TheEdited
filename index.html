@@ -1738,7 +1738,7 @@ function tindakanSebutan() {
             }
         }
 
-        // FUNGSI BAHARU: Menjana dan Memaparkan Akuan Penarikan Balik Kes
+// FUNGSI BAHARU: Menjana dan Memaparkan Akuan Penarikan Balik Kes
         function bukaPreviewTarikBalik() {
             const kes = memoriSenaraiKes[indexKesSemasa];
             if (!kes) return;
@@ -1746,31 +1746,60 @@ function tindakanSebutan() {
             // Dapatkan maklumat asas
             let noKes = kes.noKes.split('<br>')[0].trim();
             let namaP = "", kpP = "", alamatP = "", namaD = "";
-            
+            let perengganPengenalan = "";
+            let namaTandatangan = "";
+            let kpTandatangan = "";
+
             // Ekstrak maklumat dari data yang disimpan (jika ada)
             if (kes.dataBorang && kes.dataBorang.inputs) {
                 const inputs = kes.dataBorang.inputs;
                 const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
                 
                 if (isMajikan) {
-                    namaP = inputs['namaDefendan'] || '[NAMA MAJIKAN]';
-                    kpP = inputs['noPendDefendan'] || '_________________________';
+                    // LOGIK JIKA PENGADU ADALAH MAJIKAN
+                    let namaWakil = inputs['namaWakilMajikan'] || '[NAMA WAKIL]';
+                    let kpWakil = inputs['noMyKadWakil'] || '_________________________';
+                    let namaSyarikat = inputs['namaDefendan'] || '[NAMA SYARIKAT]';
+                    let noPendSyarikat = inputs['noPendDefendan'] || '_________________________';
+                    
                     let almt = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "").join(', ');
                     alamatP = almt || '____________________________________________________';
+                    
                     namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
+
+                    // Perenggan dinamik untuk Majikan
+                    perengganPengenalan = `Bahawasanya saya, <strong>${namaWakil.toUpperCase()}</strong> (No. MyKad: <strong>${kpWakil}</strong>) mewakili majikan <strong>${namaSyarikat.toUpperCase()}</strong> (No. Pendaftaran: <strong>${noPendSyarikat}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
+                    
+                    namaTandatangan = namaWakil.toUpperCase();
+                    kpTandatangan = kpWakil;
                 } else {
+                    // LOGIK JIKA PENGADU ADALAH PEKERJA (Individu / Berkumpulan)
                     namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
                     kpP = inputs['noPendPengadu'] || '_________________________';
+                    
+                    // Semak jenis ID (MyKad atau Pasport)
+                    let jenisId = inputs['jenisDaftarPengadu'] === 'Pasport' ? 'No. Pasport' : 'No. MyKad';
+                    
                     let almt = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join(', ');
                     alamatP = almt || '____________________________________________________';
+                    
                     namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
+
+                    // Perenggan dinamik untuk Pekerja
+                    perengganPengenalan = `Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (${jenisId}: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
+                    
+                    namaTandatangan = namaP.toUpperCase();
+                    kpTandatangan = kpP;
                 }
             } else {
-                // Fallback jika tiada rekod data yang terperinci
+                // Fallback jika tiada rekod data yang terperinci (kes lama)
                 namaP = kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase();
                 kpP = "_________________________";
                 alamatP = "____________________________________________________";
                 namaD = kes.namaDefendan.replace(/<br>.*$/g, '').toUpperCase();
+                perengganPengenalan = `Bahawasanya saya, <strong>${namaP}</strong> (No. Kad Pengenalan / Pasport / Pendaftaran: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD}</strong> (selepas ini dirujuk sebagai "Defendan").`;
+                namaTandatangan = namaP;
+                kpTandatangan = kpP;
             }
 
             // Stuktur HTML Rasmi Akuan Penarikan Balik Kes
@@ -1799,9 +1828,9 @@ function tindakanSebutan() {
                     <div class="tb-ref">No. Kes: ${noKes}</div>
                     <div class="tb-title">AKUAN PENARIKAN BALIK KES</div>
                     
-                    <p>Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (No. Kad Pengenalan / Pasport / Pendaftaran: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").</p>
+                    <p>${perengganPengenalan}</p>
                     
-                    <p>Saya dengan ini membuat sesungguhnya dan sebenarnya berikrar dan menyatakan seperti berikut:</p>
+                    <p>Saya dengan ini dengan sesungguhnya dan sebenarnya berikrar dan menyatakan seperti berikut:</p>
                     
                     <ol class="tb-list">
                         <li>Saya menarik balik keseluruhan aduan, tuntutan dan prosiding terhadap Defendan berhubung kes yang didaftarkan di bawah nombor kes <strong>${noKes}</strong>.</li>
@@ -1817,8 +1846,8 @@ function tindakanSebutan() {
                         <div>
                             <strong>Ditandatangani oleh (Pengadu):</strong><br><br><br><br>
                             ...................................................................<br>
-                            Nama: <strong>${namaP.toUpperCase()}</strong><br>
-                            No. KP / Pasport: ${kpP}<br>
+                            Nama: <strong>${namaTandatangan}</strong><br>
+                            No. KP / Pasport: ${kpTandatangan}<br>
                             Tarikh: _______________________<br>
                             Tempat: _______________________
                         </div>
