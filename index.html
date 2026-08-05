@@ -3005,7 +3005,7 @@ function tukarView(jenisView, dariBukaKes = false) {
             });
         }
 
-        function daftarKesSistem() {
+function daftarKesSistem() {
             let noKesAsal = document.getElementById('noKes').value;
             let noKesBersih = noKesAsal.split('<br>')[0].trim();
 
@@ -3037,13 +3037,18 @@ function tukarView(jenisView, dariBukaKes = false) {
             const jenisAduan = isMajikan ? 'Majikan' : (aduanBerkumpulan ? 'Berkumpulan' : 'Individu');
             const tarikhHariIni = new Date().toLocaleDateString('ms-MY');
 
+            // --- TAMBAH KOD INI UNTUK TANGKAP SEMUA DATA BORANG PENDAFTARAN ---
+            const dataPenuh = kumpulDataBorang(); 
+
             const rekodRasmi = { 
                 noKes: noKesBersih, 
                 namaPengadu: namaPengaduFinal, 
                 namaDefendan: namaDefendanFinal, 
                 jenisAduan: jenisAduan, 
-                tarikh: tarikhHariIni 
+                tarikh: tarikhHariIni,
+                dataBorang: dataPenuh // <-- MASUKKAN DATA PENUH KE DALAM REKOD
             };
+            // ------------------------------------------------------------------
 
             let indeksSediaAda = (noKesBersih !== "") ? memoriSenaraiKes.findIndex(kes => kes.noKes.split('<br>')[0].trim() === noKesBersih) : -1;
 
@@ -3063,14 +3068,14 @@ function tukarView(jenisView, dariBukaKes = false) {
                 memoriSenaraiKes.unshift(rekodRasmi);
             }
 
-alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
-    
-    isSelesaiDaftar = true; 
-    indexKesSemasa = -1; // <--- TAMBAH BARIS INI JUGA (jika belum ada)
-    isEditMode = false;  // <--- TAMBAH BARIS INI DI SINI
-    
-    tukarView('senarai');
-}
+            alert("Tahniah! Kes berjaya didaftarkan ke dalam sistem."); 
+                
+            isSelesaiDaftar = true; 
+            indexKesSemasa = -1; 
+            isEditMode = false;  
+            
+            tukarView('senarai');
+        }
 // FUNGSI BARU UNTUK KUMPUL SEMUA DATA BORANG
 function kumpulDataBorang() {
     let formData = {};
