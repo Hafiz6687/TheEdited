@@ -720,7 +720,8 @@ Portal rasmi : jtksm.mohr.gov.my
                     <!-- Dibungkus dan disembunyikan (display:none) secara lalai -->
                     <div id="ruanganNoKes" style="display: none; align-items: center; gap: 8px;">
                         <label style="font-weight: 700; color: var(--text-muted); font-size: 0.95em; margin: 0;">No. Kes:</label>
-                        <input type="text" id="noKes" value="KBR/10103/2026/0112" style="font-weight: 700; color: var(--primary-blue); font-size: 1.05em; background-color: transparent; border: none; border-radius: 0; width: 220px; text-align: center; padding: 4px; outline: none; margin: 0;">
+                        <!-- Cari baris ini dan ubah nilai (value) di dalamnya -->
+<input type="text" id="noKes" value="KBR/10103/2026/0001" style="font-weight: 700; color: var(--primary-blue); font-size: 1.05em; background-color: transparent; border: none; border-radius: 0; width: 220px; text-align: center; padding: 4px; outline: none; margin: 0;">
                         <div class="tooltip-container">
                             <span style="font-size: 1.2em; color: var(--primary-blue);">ℹ️</span>
                             <div class="tooltip-text">
@@ -1412,8 +1413,8 @@ Portal rasmi : jtksm.mohr.gov.my
                 };
             }
 
-            memoriSenaraiKes.push({
-                noKes: "KBR/10103/2026/0112",
+                memoriSenaraiKes.push({
+                noKes: "KBR/10103/2026/0001", // <--- UBAH DI SINI
                 namaPengadu: "Mohamad Hafiz Bin Abu Bakar",
                 namaDefendan: "Abc Teknologi Enterprise<br><span style='font-size: 0.85em; font-weight: normal;'>Pemilik: Ali Bin Abu Chik</span>",
                 jenisAduan: "Individu",
@@ -2983,24 +2984,28 @@ function resetBorangPendaftaran() {
                 if(aduanIndividu) aduanIndividu.checked = true;
             }
 
-            // --- KOD TAMBAHAN UNTUK TUTUP SEMULA KOTAK-KOTAK YANG TERBUKA ---
-            document.getElementById('kandunganMaklumatPerkhidmatan').style.display = 'none';
-            document.getElementById('labelTogolPerkhidmatan').innerHTML = '▼ Buka';
-            document.getElementById('labelTogolPerkhidmatan').style.backgroundColor = '#f1f5f9';
-            document.getElementById('labelTogolPerkhidmatan').style.color = 'var(--text-muted)';
-            
-            document.getElementById('ruanganJenisPerniagaan').style.display = 'none';
-            document.getElementById('ruanganSektorLain').style.display = 'none';
-            
-            document.getElementById('ruanganElaunWrapper').style.display = 'none';
-            document.getElementById('btnTambahElaun').style.display = 'none';
-            document.getElementById('senaraiElaun').innerHTML = '';
-            // ----------------------------------------------------------------
+// --- KOD TAMBAHAN UNTUK TUTUP SEMULA KOTAK-KOTAK YANG TERBUKA ---
+        document.getElementById('kandunganMaklumatPerkhidmatan').style.display = 'none';
+        document.getElementById('labelTogolPerkhidmatan').innerHTML = '▼ Buka';
+        document.getElementById('labelTogolPerkhidmatan').style.backgroundColor = '#f1f5f9';
+        document.getElementById('labelTogolPerkhidmatan').style.color = 'var(--text-muted)';
+        
+        document.getElementById('ruanganJenisPerniagaan').style.display = 'none';
+        document.getElementById('ruanganSektorLain').style.display = 'none';
+        
+        document.getElementById('ruanganElaunWrapper').style.display = 'none';
+        document.getElementById('btnTambahElaun').style.display = 'none';
+        document.getElementById('senaraiElaun').innerHTML = '';
+        // ----------------------------------------------------------------
 
-            tukarPeranan(); 
-            kawalJenisDaftarPengadu();
-            kawalJenisDaftarDefendan();
-        }
+        // --- TAMBAH KOD INI UNTUK SUNTIK NO KES AUTO-INCREMENT ---
+        document.getElementById('noKes').value = janaNoKesBaru();
+        // ---------------------------------------------------------
+
+        tukarPeranan(); 
+        kawalJenisDaftarPengadu();
+        kawalJenisDaftarDefendan();
+    }
 
 function tukarView(jenisView, dariBukaKes = false) {
     const navSenarai = document.getElementById('navSenarai');
@@ -4092,7 +4097,30 @@ function kawalJenisAduanTuntutan() {
         function semakKelayakanTuntutan() {
             kawalJenisAduanTuntutan();
         }
-
+// FUNGSI JANA NO KES BAHARU SECARA AUTOMATIK
+function janaNoKesBaru() {
+    let maxBil = 0;
+    
+    // Cari nombor bil. pendaftaran yang paling tinggi dalam memori
+    memoriSenaraiKes.forEach(kes => {
+        let no = kes.noKes.split('<br>')[0].trim(); // Buang tag DRAF jika ada
+        let parts = no.split('/');
+        
+        // Pastikan ia mematuhi format (Cth: KBR / 10103 / 2026 / 0001)
+        if (parts.length === 4) {
+            let bil = parseInt(parts[3], 10);
+            if (!isNaN(bil) && bil > maxBil) {
+                maxBil = bil;
+            }
+        }
+    });
+    
+    // Tambah 1 dan formatkan menjadi 4 digit (cth: 0002)
+    let bilSeterusnya = (maxBil + 1).toString().padStart(4, '0');
+    
+    // (Nota: Anda boleh tukar '2026' kepada new Date().getFullYear() untuk tahun semasa)
+    return `KBR/10103/2026/${bilSeterusnya}`;
+}
     </script>
 </body>
 </html>
