@@ -4014,7 +4014,7 @@ function semakStatusCetakLengkap() {
             if (radioTerpilih) { btnSeterusnya.style.display = 'flex'; } else { btnSeterusnya.style.display = 'none'; }
         }
 
-        function kawalJenisAduanTuntutan() {
+function kawalJenisAduanTuntutan() {
             const aduanBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
             const isMajikan = document.getElementById('majikan').checked;
             
@@ -4026,23 +4026,38 @@ function semakStatusCetakLengkap() {
             
             const butangSeterusnya = document.getElementById('ruanganButangSeterusnyaTab1');
 
+            // --- LOGIK KELAYAKAN TUNTUTAN BAHARU ---
+            // Semak Sektor dan Jenis Perniagaan untuk tentukan jadual patut dipapar atau disembunyi
+            const sektor = document.getElementById('sektorDefendan').value;
+            const jp = document.getElementById('jenisPerniagaan').value.trim();
+            
+            if (sektor === '' || jp === '') {
+                // Jika masih kosong (terutama waktu di-reset), sembunyikan semua jadual tuntutan
+                if (kad3Ketua) kad3Ketua.style.display = 'none';
+                if (kandunganKetua) kandunganKetua.style.display = 'none';
+                if (kandunganBiasa) kandunganBiasa.style.display = 'none';
+                if (butangSeterusnya) butangSeterusnya.style.display = 'none';
+                return; // Berhenti di sini
+            }
+            // ---------------------------------------
+
             if (isMajikan) {
-                kad3Ketua.style.display = 'none';
-                tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan Majikan';
-                kandunganBiasa.style.display = 'block'; 
-                butangSeterusnya.style.display = 'block'; 
+                if (kad3Ketua) kad3Ketua.style.display = 'none';
+                if (tajukTuntutanSediaAda) tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan Majikan';
+                if (kandunganBiasa) kandunganBiasa.style.display = 'block'; 
+                if (butangSeterusnya) butangSeterusnya.style.display = 'block'; 
             } else {
                 if (aduanBerkumpulan) {
-                    kad3Ketua.style.display = 'flex';
-                    kandunganKetua.style.display = 'block'; 
-                    tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan (Yang sama untuk semua pengadu lain)';
-                    kandunganBiasa.style.display = 'block';
-                    butangSeterusnya.style.display = 'block';
+                    if (kad3Ketua) kad3Ketua.style.display = 'flex';
+                    if (kandunganKetua) kandunganKetua.style.display = 'block'; 
+                    if (tajukTuntutanSediaAda) tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan (Yang sama untuk semua pengadu lain)';
+                    if (kandunganBiasa) kandunganBiasa.style.display = 'block';
+                    if (butangSeterusnya) butangSeterusnya.style.display = 'block';
                 } else {
-                    kad3Ketua.style.display = 'none';
-                    tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan';
-                    kandunganBiasa.style.display = 'block'; 
-                    butangSeterusnya.style.display = 'block'; 
+                    if (kad3Ketua) kad3Ketua.style.display = 'none';
+                    if (tajukTuntutanSediaAda) tajukTuntutanSediaAda.innerText = 'Maklumat Tuntutan';
+                    if (kandunganBiasa) kandunganBiasa.style.display = 'block'; 
+                    if (butangSeterusnya) butangSeterusnya.style.display = 'block'; 
                 }
             }
         }
