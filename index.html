@@ -1904,9 +1904,49 @@ function tindakanSebutan() {
             // Tambahkan alert di sini sebelum modal dipaparkan
             alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
 
-            // Tampilkan Modal Preview
-            document.getElementById('modalPreview').style.display = 'flex';
-        }
+// Konfigurasi butang Action Dropdown di penjuru atas kanan
+document.getElementById('menuCetakAkuan').style.display = 'none';
+document.getElementById('menuCetakKenyataan').style.display = 'none';
+document.getElementById('menuDaftar').style.display = 'none';
+
+// 1. Sembunyikan butang Batal Pemfailan
+document.getElementById('menuBatal').style.display = 'none';
+
+// 2. Guna semula butang menuCetakG1 untuk Cetak Akuan Penarikan
+const menuCetakG1 = document.getElementById('menuCetakG1');
+menuCetakG1.style.display = 'flex';
+menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
+
+// (Reset gaya asal sekiranya pengguna buka paparan ini kali kedua)
+menuCetakG1.style.color = 'var(--text-main)';
+menuCetakG1.style.fontWeight = '600';
+
+// 3. Flow apabila Cetak Akuan Penarikan diklik
+menuCetakG1.onclick = function() {
+    document.getElementById('actionMenu').classList.remove('show');
+    
+    // Buka tetingkap cetakan (Print)
+    window.print();
+    
+    // Selepas cetak (delay 500ms), tukar butang menjadi Selesai
+    setTimeout(() => {
+        menuCetakG1.innerHTML = '✅ Selesai';
+        menuCetakG1.style.color = 'var(--success)'; // Warna hijau
+        menuCetakG1.style.fontWeight = '700';
+        
+        // 4. Flow apabila butang Selesai diklik
+        menuCetakG1.onclick = function() {
+            document.getElementById('actionMenu').classList.remove('show');
+            document.getElementById('modalPreview').style.display = 'none';
+            
+            // Kembali ke Senarai Tugasan
+            tukarView('senarai');
+            
+            // Kosongkan form pendaftaran (kerana kes telah ditarik balik)
+            resetBorangPendaftaran();
+        };
+    }, 500);
+};
 
 // FUNGSI BAHARU: Menjana dan Memaparkan Salinan DTP Notis Sebutan Kes (100% Exact Layout)
         function bukaPreviewNotisSebutan() {
@@ -4265,7 +4305,7 @@ function bukaPreviewPDF(jenisBorang) {
             document.getElementById('menuCetakKenyataan').style.display = 'flex';
             document.getElementById('menuCetakG1').style.display = 'none'; 
             document.getElementById('menuDaftar').style.display = 'none';
-
+            
             document.getElementById('modalPreview').style.display = 'flex';
             document.body.classList.remove('print-only-akuan', 'print-only-kenyataan');
         }
