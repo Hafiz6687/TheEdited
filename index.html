@@ -3105,10 +3105,6 @@ function bukaTab(tabId, elemenTab) {
             }
         }
 
-// ==========================================================================
-// BLOK KEBAL TERAKHIR: FORMAT MYKAD & AUTO-DETECT JANTINA
-// ==========================================================================
-
 function formatMyKadWakil(inputElement) {
     let val = inputElement.value.replace(/[^0-9]/g, '');
     let formatted = val;
@@ -3158,17 +3154,17 @@ function formatMyKad(inputElement, dropdownId) {
 
         // Logik Auto-Detect Jantina Pengadu
         if (val.length === 12 && inputElement.id === 'noPendPengadu') {
-            let lastDigit = parseInt(val.slice(-1), 10); // Ambil nombor terakhir dengan selamat
+            let lastDigit = parseInt(val.slice(-1), 10);
             let btnL = document.getElementById('jantinaLelaki');
             let btnP = document.getElementById('jantinaPerempuan');
             
             if (btnL && btnP) {
                 if (lastDigit % 2 !== 0) {
                     btnL.checked = true;
-                    btnL.dispatchEvent(new Event('change', { bubbles: true })); // Paksa browser update UI
+                    btnL.dispatchEvent(new Event('change', { bubbles: true }));
                 } else {
                     btnP.checked = true;
-                    btnP.dispatchEvent(new Event('change', { bubbles: true })); // Paksa browser update UI
+                    btnP.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
         }
