@@ -3106,81 +3106,74 @@ function bukaTab(tabId, elemenTab) {
         }
 
 // ==========================================================================
-// BLOK KEBAL: FORMAT MYKAD & AUTO-DETECT JANTINA
+// BLOK KEBAL TERAKHIR: FORMAT MYKAD & AUTO-DETECT JANTINA
 // ==========================================================================
 
 function formatMyKadWakil(inputElement) {
-    try {
-        let val = inputElement.value.replace(/[^0-9]/g, ''); 
-        let formatted = val;
-        
-        if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-        if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-        
-        inputElement.value = formatted;
-        
-        // Auto-detect jantina Wakil
-        if (val.length === 12) {
-            let lastDigit = parseInt(val.substring(11, 12));
-            const btnLelaki = document.getElementById('jantinaLelakiWakil');
-            const btnPerempuan = document.getElementById('jantinaPerempuanWakil');
-            
-            if (btnLelaki && btnPerempuan) {
-                if (lastDigit % 2 !== 0) {
-                    btnLelaki.checked = true;
-                } else {
-                    btnPerempuan.checked = true;
-                }
+    let val = inputElement.value.replace(/[^0-9]/g, '');
+    let formatted = val;
+    if (val.length > 6) formatted = formatted.substring(0, 6) + '-' + formatted.substring(6);
+    if (val.length > 8) formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13);
+    inputElement.value = formatted;
+
+    if (val.length === 12) {
+        let lastDigit = parseInt(val.slice(-1), 10);
+        let btnL = document.getElementById('jantinaLelakiWakil');
+        let btnP = document.getElementById('jantinaPerempuanWakil');
+        if (btnL && btnP) {
+            if (lastDigit % 2 !== 0) {
+                btnL.checked = true;
+                btnL.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                btnP.checked = true;
+                btnP.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
-    } catch (error) { console.error("Ralat formatMyKadWakil: ", error); }
+    }
 }
 
 function formatMyKadPemilik(inputElement) {
-    try {
-        let val = inputElement.value.replace(/[^0-9]/g, ''); 
-        let formatted = val;
-        
-        if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-        if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-        
-        inputElement.value = formatted;
-    } catch (error) { console.error("Ralat formatMyKadPemilik: ", error); }
+    let val = inputElement.value.replace(/[^0-9]/g, '');
+    let formatted = val;
+    if (val.length > 6) formatted = formatted.substring(0, 6) + '-' + formatted.substring(6);
+    if (val.length > 8) formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13);
+    inputElement.value = formatted;
 }
 
 function formatMyKad(inputElement, dropdownId) {
-    try {
-        const dropdownElement = document.getElementById(dropdownId);
-        const jenis = dropdownElement ? dropdownElement.value : 'MyKad';
+    let jenis = 'MyKad';
+    if (dropdownId) {
+        let dropdown = document.getElementById(dropdownId);
+        if (dropdown) jenis = dropdown.value;
+    }
 
-        if (jenis === 'MyKad') {
-            let val = inputElement.value.replace(/[^0-9]/g, ''); 
-            let formatted = val;
+    if (jenis === 'MyKad') {
+        let val = inputElement.value.replace(/[^0-9]/g, '');
+        let formatted = val;
+        
+        if (val.length > 6) formatted = formatted.substring(0, 6) + '-' + formatted.substring(6);
+        if (val.length > 8) formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13);
+        
+        inputElement.value = formatted;
+
+        // Logik Auto-Detect Jantina Pengadu
+        if (val.length === 12 && inputElement.id === 'noPendPengadu') {
+            let lastDigit = parseInt(val.slice(-1), 10); // Ambil nombor terakhir dengan selamat
+            let btnL = document.getElementById('jantinaLelaki');
+            let btnP = document.getElementById('jantinaPerempuan');
             
-            if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-            if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-            
-            inputElement.value = formatted;
-            
-            // Auto-detect jantina Pengadu
-            if (val.length === 12 && dropdownId === 'jenisDaftarPengadu') {
-                let lastDigit = parseInt(val.substring(11, 12));
-                const btnLelaki = document.getElementById('jantinaLelaki');
-                const btnPerempuan = document.getElementById('jantinaPerempuan');
-                
-                if (btnLelaki && btnPerempuan) {
-                    if (lastDigit % 2 !== 0) {
-                        btnLelaki.checked = true;
-                    } else {
-                        btnPerempuan.checked = true;
-                    }
+            if (btnL && btnP) {
+                if (lastDigit % 2 !== 0) {
+                    btnL.checked = true;
+                    btnL.dispatchEvent(new Event('change', { bubbles: true })); // Paksa browser update UI
+                } else {
+                    btnP.checked = true;
+                    btnP.dispatchEvent(new Event('change', { bubbles: true })); // Paksa browser update UI
                 }
             }
         }
-    } catch (error) { console.error("Ralat formatMyKad: ", error); }
+    }
 }
-// ==========================================================================
-
 
 
         function kawalSektor() {
