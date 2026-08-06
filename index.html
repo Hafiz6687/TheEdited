@@ -2236,18 +2236,6 @@ function bukaPreviewNotisSebutan() {
             }
         }
 
-        function formatMyKadWakil(inputElement) {
-            let val = inputElement.value.replace(/[^0-9]/g, ''); 
-            let formatted = val;
-            if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-            if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-            inputElement.value = formatted;
-            if (val.length === 12) {
-                let lastDigit = parseInt(val.substring(11, 12));
-                if (lastDigit % 2 !== 0) { document.getElementById('jantinaLelakiWakil').checked = true; } 
-                else { document.getElementById('jantinaPerempuanWakil').checked = true; }
-            }
-        }
 
 function kemaskiniDropdownPendaftaran() {
     const dropPengadu = document.getElementById('jenisDaftarPengadu');
@@ -3117,26 +3105,83 @@ function bukaTab(tabId, elemenTab) {
             }
         }
 
-        function formatMyKadPemilik(inputElement) {
-            let val = inputElement.value.replace(/[^0-9]/g, ''); let formatted = val;
-            if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-            if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-            inputElement.value = formatted;
-        }
+// ==========================================================================
+// BLOK KEBAL: FORMAT MYKAD & AUTO-DETECT JANTINA
+// ==========================================================================
 
-        function formatMyKad(inputElement, dropdownId) {
-            const jenis = document.getElementById(dropdownId).value;
-            if (jenis === 'MyKad') {
-                let val = inputElement.value.replace(/[^0-9]/g, ''); let formatted = val;
-                if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
-                if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
-                inputElement.value = formatted;
-                if (val.length === 12 && dropdownId === 'jenisDaftarPengadu') {
-                    let lastDigit = parseInt(val.substring(11, 12));
-                    if (lastDigit % 2 !== 0) { document.getElementById('jantinaLelaki').checked = true; } else { document.getElementById('jantinaPerempuan').checked = true; }
+function formatMyKadWakil(inputElement) {
+    try {
+        let val = inputElement.value.replace(/[^0-9]/g, ''); 
+        let formatted = val;
+        
+        if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
+        if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
+        
+        inputElement.value = formatted;
+        
+        // Auto-detect jantina Wakil
+        if (val.length === 12) {
+            let lastDigit = parseInt(val.substring(11, 12));
+            const btnLelaki = document.getElementById('jantinaLelakiWakil');
+            const btnPerempuan = document.getElementById('jantinaPerempuanWakil');
+            
+            if (btnLelaki && btnPerempuan) {
+                if (lastDigit % 2 !== 0) {
+                    btnLelaki.checked = true;
+                } else {
+                    btnPerempuan.checked = true;
                 }
             }
         }
+    } catch (error) { console.error("Ralat formatMyKadWakil: ", error); }
+}
+
+function formatMyKadPemilik(inputElement) {
+    try {
+        let val = inputElement.value.replace(/[^0-9]/g, ''); 
+        let formatted = val;
+        
+        if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
+        if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
+        
+        inputElement.value = formatted;
+    } catch (error) { console.error("Ralat formatMyKadPemilik: ", error); }
+}
+
+function formatMyKad(inputElement, dropdownId) {
+    try {
+        const dropdownElement = document.getElementById(dropdownId);
+        const jenis = dropdownElement ? dropdownElement.value : 'MyKad';
+
+        if (jenis === 'MyKad') {
+            let val = inputElement.value.replace(/[^0-9]/g, ''); 
+            let formatted = val;
+            
+            if (val.length > 6) { formatted = val.substring(0, 6) + '-' + val.substring(6); }
+            if (val.length > 8) { formatted = formatted.substring(0, 9) + '-' + formatted.substring(9, 13); }
+            
+            inputElement.value = formatted;
+            
+            // Auto-detect jantina Pengadu
+            if (val.length === 12 && dropdownId === 'jenisDaftarPengadu') {
+                let lastDigit = parseInt(val.substring(11, 12));
+                const btnLelaki = document.getElementById('jantinaLelaki');
+                const btnPerempuan = document.getElementById('jantinaPerempuan');
+                
+                if (btnLelaki && btnPerempuan) {
+                    if (lastDigit % 2 !== 0) {
+                        btnLelaki.checked = true;
+                    } else {
+                        btnPerempuan.checked = true;
+                    }
+                }
+            }
+        }
+    } catch (error) { console.error("Ralat formatMyKad: ", error); }
+}
+// ==========================================================================
+
+
 
         function kawalSektor() {
             const sektor = document.getElementById('sektorDefendan').value;
