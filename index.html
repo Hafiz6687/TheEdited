@@ -3105,6 +3105,10 @@ function bukaTab(tabId, elemenTab) {
             }
         }
 
+// ==========================================================================
+// KAD TERAKHIR: FORMAT MYKAD & AUTO-DETECT JANTINA (NATIVE CLICK)
+// ==========================================================================
+
 function formatMyKadWakil(inputElement) {
     let val = inputElement.value.replace(/[^0-9]/g, '');
     let formatted = val;
@@ -3118,11 +3122,9 @@ function formatMyKadWakil(inputElement) {
         let btnP = document.getElementById('jantinaPerempuanWakil');
         if (btnL && btnP) {
             if (lastDigit % 2 !== 0) {
-                btnL.checked = true;
-                btnL.dispatchEvent(new Event('change', { bubbles: true }));
+                btnL.click(); // Paksa fizikal klik
             } else {
-                btnP.checked = true;
-                btnP.dispatchEvent(new Event('change', { bubbles: true }));
+                btnP.click(); // Paksa fizikal klik
             }
         }
     }
@@ -3152,7 +3154,6 @@ function formatMyKad(inputElement, dropdownId) {
         
         inputElement.value = formatted;
 
-        // Logik Auto-Detect Jantina Pengadu
         if (val.length === 12 && inputElement.id === 'noPendPengadu') {
             let lastDigit = parseInt(val.slice(-1), 10);
             let btnL = document.getElementById('jantinaLelaki');
@@ -3160,16 +3161,15 @@ function formatMyKad(inputElement, dropdownId) {
             
             if (btnL && btnP) {
                 if (lastDigit % 2 !== 0) {
-                    btnL.checked = true;
-                    btnL.dispatchEvent(new Event('change', { bubbles: true }));
+                    btnL.click(); // Paksa fizikal klik pada butang Lelaki
                 } else {
-                    btnP.checked = true;
-                    btnP.dispatchEvent(new Event('change', { bubbles: true }));
+                    btnP.click(); // Paksa fizikal klik pada butang Perempuan
                 }
             }
         }
     }
 }
+// ==========================================================================
 
 
         function kawalSektor() {
