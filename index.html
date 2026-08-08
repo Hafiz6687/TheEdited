@@ -7,11 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
+:root {
             --primary-blue: #2563eb;
             --primary-hover: #1d4ed8;
             --bg-color: #e2e8f0; 
-            --sidebar-bg: #f8fafc;
+            --sidebar-bg: #e2e8f0; /* <-- DIUBAH: Disamakan dengan bg-color supaya blend */
             --text-main: #1e293b; 
             --text-muted: #475569;
             --border-color: #cbd5e1; 
@@ -32,14 +32,13 @@
             height: 100vh;
         }
 
-        .sidebar {
+.sidebar {
             width: 260px;
             min-width: 260px;
             background-color: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--border-color);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            /* border-right dan box-shadow dibuang supaya sidebar betul-betul blend dengan background */
             z-index: 10;
             overflow-y: auto; 
         }
@@ -519,13 +518,15 @@
 
 <!-- SIDEBAR -->
     <aside class="sidebar">
-        <div class="sidebar-header" style="padding: 20px 10px;">
-            <!-- Masukkan logo baharu di sini -->
-            <img src="logo-mysystem.png" alt="MySystem Logo" style="width: 100%; max-width: 180px; height: auto; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h2 style="display: none;">MySystem</h2>
+        <div class="sidebar-header" style="padding: 30px 20px 20px 20px; display: flex; flex-direction: column; align-items: center;">
+            <!-- Logo dibesarkan, shadow/border dibuang supaya clean seperti dalam gambar -->
+            <img src="logo-mysystem.png" alt="MySystem Logo" style="width: 100%; max-width: 220px; height: auto;">
+            <!-- Perkataan MySystem dipaparkan dan dikecilkan -->
+            <h2 style="margin: 10px 0 0 0; color: var(--text-main); font-size: 16px; font-weight: 700; text-align: center;">MySystem</h2>
         </div>
         
-        <div style="display: flex; gap: 12px; margin: 0 16px 16px; padding: 10px; align-items: center; background-color: #cbd5e1; border: 1px solid var(--border-color); border-radius: 12px;">
+        <!-- Background kotak profil dihilangkan supaya ia blend sempurna dengan background -->
+        <div style="display: flex; gap: 12px; margin: 0 20px 20px; align-items: center;">
             
             <div id="bekasProfil" style="flex-shrink: 0; width: 48px; height: 48px; background-color: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" title="Klik untuk muat naik. Seret untuk laras, Scroll/Cubit untuk zoom, Dwi-klik untuk tukar.">
                 <div id="ikonKamera" style="display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center;" onclick="document.getElementById('uploadProfil').click()">
@@ -535,8 +536,8 @@
                 <input type="file" id="uploadProfil" accept="image/*" style="display: none;" onchange="muatNaikGambarProfil(this)">
             </div>
 
-            <div style="flex-grow: 1; overflow: hidden;">
-                <div id="namaProfilEdit" contenteditable="true" spellcheck="false" style="font-size: 0.85em; font-weight: 700; color: var(--text-main); line-height: 1.3; outline: none; padding: 4px; border-radius: 6px; transition: all 0.2s; word-wrap: break-word;" onfocus="this.style.backgroundColor='#ffffff'; this.style.boxShadow='inset 0 0 0 1px var(--primary-blue)';" onblur="this.style.backgroundColor='transparent'; this.style.boxShadow='none'; simpanNamaProfil(this);" title="Klik untuk edit nama">Mohamad Hafiz b<br>Abu Bakar</div>
+            <div style="flex-grow: 1; overflow: hidden; text-align: left;">
+                <div id="namaProfilEdit" contenteditable="true" spellcheck="false" style="font-size: 0.85em; font-weight: 700; color: var(--text-main); line-height: 1.3; outline: none; padding: 4px; border-radius: 6px; transition: all 0.2s; word-wrap: break-word;" onfocus="this.style.backgroundColor='#ffffff'; this.style.boxShadow='inset 0 0 0 1px var(--primary-blue)';" onblur="this.style.backgroundColor='transparent'; this.style.boxShadow='none'; simpanNamaProfil(this);" title="Klik untuk edit nama">Mohamad Hafiz bin<br>Abu Bakar</div>
             </div>
             
         </div>
