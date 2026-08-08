@@ -1348,6 +1348,7 @@ Portal rasmi : jtksm.mohr.gov.my
 
         let memoriTuntutan = []; 
         let memoriTuntutanKetua = []; 
+        let memoriTuntutanTambahan = {}; // Memori khas untuk Pengadu 1, 2, 3...
         let memoriSenaraiKes = [];
         let indexKesSemasa = -1; 
         let isAkuanPrinted = false;
@@ -2281,18 +2282,20 @@ function kemaskiniDropdownPendaftaran() {
                 janaJadualPengaduTambahan(0); // Kosongkan jika kotak dibiarkan kosong
             }
         }
-       // --- FUNGSI BARU: Bina Jadual Pengadu Tambahan Secara Dinamik ---
+// --- FUNGSI DIKEMASKINI: Bina Jadual Pengadu Tambahan (Sokong Butang Modal) ---
         function janaJadualPengaduTambahan(bilangan) {
             const container = document.getElementById('ruanganPengaduTambahan');
             if (!container) return;
             
             container.innerHTML = ''; // Kosongkan bekas sebelum bina yang baru
             
-            // Hanya mula jika pengadu > 1
             if (bilangan > 1) {
-                let bilanganTambahan = bilangan - 1; // Tolak 1 (kerana 1 adalah Ketua)
+                let bilanganTambahan = bilangan - 1; 
                 
                 for (let i = 1; i <= bilanganTambahan; i++) {
+                    // Sediakan memori kosong untuk pengadu ini jika belum wujud
+                    if (!memoriTuntutanTambahan[i]) memoriTuntutanTambahan[i] = [];
+
                     const pengaduDiv = document.createElement('div');
                     pengaduDiv.style.marginTop = '20px';
                     pengaduDiv.style.border = '1px solid var(--border-color)';
@@ -2318,37 +2321,74 @@ function kemaskiniDropdownPendaftaran() {
                                 </div>
                             </div>
                             
-                            <h6 style="color: var(--text-main); margin: 20px 0 10px 0; font-size: 0.9em;">Jadual Tuntutan Pengadu ${i}</h6>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <h6 style="color: var(--text-main); margin: 0; font-size: 0.95em;">Jadual Tuntutan Pengadu ${i}</h6>
+                                <button type="button" class="btn-add btn-terapung" style="margin: 0; background-color: #0ea5e9; white-space: nowrap; padding: 8px 15px; font-size: 0.85em;" onclick="bukaModalTuntutan('tambahan_${i}')">+ Tambah Tuntutan Pengadu ${i}</button>
+                            </div>
+
                             <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
                                 <thead style="background-color: var(--card-header-bg);">
                                     <tr>
                                         <th style="width: 5%; text-align: center; border-bottom: 1px solid var(--border-color);">Bil.</th>
-                                        <th style="width: 30%; border-bottom: 1px solid var(--border-color);">Jenis Tuntutan</th>
-                                        <th style="width: 45%; border-bottom: 1px solid var(--border-color);">Keterangan Tuntutan</th>
-                                        <th style="width: 20%; text-align: right; border-bottom: 1px solid var(--border-color);">Jumlah (RM)</th>
+                                        <th style="width: 25%; border-bottom: 1px solid var(--border-color);">Jenis Tuntutan</th>
+                                        <th style="width: 35%; border-bottom: 1px solid var(--border-color);">Keterangan Tuntutan</th>
+                                        <th style="width: 15%; text-align: right; border-bottom: 1px solid var(--border-color);">Jumlah (RM)</th>
+                                        <th style="width: 10%; text-align: center; border-bottom: 1px solid var(--border-color);">Kemaskini</th>
+                                        <th style="width: 10%; text-align: center; border-bottom: 1px solid var(--border-color);">Hapus</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="text-align: center; padding: 10px; border-bottom: none;">1</td>
-                                        <td style="padding: 10px; border-bottom: none;"><input type="text" placeholder="Cth: Baki Gaji" style="padding: 8px; font-size: 0.95em;"></td>
-                                        <td style="padding: 10px; border-bottom: none;"><input type="text" placeholder="Cth: (Ogos 2026)" style="padding: 8px; font-size: 0.95em;"></td>
-                                        <td style="padding: 10px; border-bottom: none;">
-                                            <div style="position: relative;">
-                                                <span style="position: absolute; left: 10px; top: 9px; color: var(--text-muted); font-weight: 600; font-size: 0.9em;">RM</span>
-                                                <input type="text" placeholder="0.00" style="padding: 8px 8px 8px 35px; font-size: 0.95em; text-align: right; width: 100%;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')" onfocus="unformatDuit(this)" onblur="formatDuit(this)">
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tbody id="bodyTuntutanTambahan${i}">
+                                    <!-- JS akan generate di sini -->
                                 </tbody>
                             </table>
                         </div>
                     `;
                     container.appendChild(pengaduDiv);
+                    
+                    // Render paparan jadual bagi setiap pengadu
+                    renderJadualTuntutanTambahan(i);
                 }
             }
         }
-
+// --- FUNGSI BARU: Papar memori jadual tuntutan tambahan ke dalam skrin ---
+        function renderJadualTuntutanTambahan(idx) {
+            const tbody = document.getElementById(`bodyTuntutanTambahan${idx}`);
+            if (!tbody) return;
+            
+            tbody.innerHTML = "";
+            let arrayTuntutan = memoriTuntutanTambahan[idx] || [];
+            
+            if (arrayTuntutan.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-row" style="text-align: center; padding: 12px;">Tiada maklumat tuntutan direkodkan.</td></tr>`;
+            } else {
+                let jumlahKeseluruhan = 0;
+                arrayTuntutan.forEach((item, index) => {
+                    const jumlahNum = parseFloat(item.jumlah);
+                    jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
+                    const jumlahCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: center;">${index + 1}</td>
+                        <td>${item.jenis}</td>
+                        <td>${item.keterangan}</td>
+                        <td style="text-align: right; font-weight: 500;">RM ${jumlahCantik}</td>
+                        <td style="text-align: center;"><button type="button" class="btn-edit-tbl" style="background-color: #0ea5e9;" onclick="bukaModalTuntutan('tambahan_${idx}', ${index})">✏️ Edit</button></td>
+                        <td style="text-align: center;"><button type="button" class="btn-delete-tbl" onclick="hapusTuntutan(${index}, 'tambahan_${idx}')">🗑️ Hapus</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                const trTotal = document.createElement('tr');
+                trTotal.style.backgroundColor = '#f0f9ff';
+                trTotal.style.fontWeight = 'bold';
+                trTotal.innerHTML = `
+                    <td colspan="3" style="text-align:right; padding-right: 15px; color: var(--text-main);">JUMLAH KESELURUHAN PENGADU ${idx}</td>
+                    <td colspan="3" style="color: #0ea5e9; text-align: left; padding-left: 16px;">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                `;
+                tbody.appendChild(trTotal);
+            }
+        }
         // --- FUNGSI BARU: Togol untuk jadual Pengadu Tambahan ---
         function togglePengaduTambahan(index) {
             const kandungan = document.getElementById(`kandunganPengadu${index}`);
@@ -2725,7 +2765,7 @@ function bukaTab(tabId, elemenTab) {
             if(val === 'Lain-lain') { jenisTuntutanLain.style.display = 'block'; } else { jenisTuntutanLain.style.display = 'none'; jenisTuntutanLain.value = ''; }
         }
 
-        function bukaModalTuntutan(jenisJadual = 'biasa', indexEdit = -1) {
+function bukaModalTuntutan(jenisJadual = 'biasa', indexEdit = -1) {
             document.getElementById('modalTuntutan').style.display = 'flex';
             document.getElementById('jenisJadualTuntutan').value = jenisJadual;
             
@@ -2739,9 +2779,18 @@ function bukaTab(tabId, elemenTab) {
             senaraiPilihan.forEach(item => { dropdown.innerHTML += `<option value="${item}">${item}</option>`; });
             
             if(indexEdit > -1) {
+                // --- KENAL PASTI ARRAY YANG BETUL ---
+                let targetArray;
+                if (jenisJadual === 'ketua') {
+                    targetArray = memoriTuntutanKetua;
+                } else if (jenisJadual.startsWith('tambahan_')) {
+                    let idxTambahan = parseInt(jenisJadual.split('_')[1]);
+                    targetArray = memoriTuntutanTambahan[idxTambahan];
+                } else {
+                    targetArray = memoriTuntutan;
+                }
+
                 document.getElementById('tajukModal').innerHTML = "Kemaskini Tuntutan";
-                
-                const targetArray = (jenisJadual === 'ketua') ? memoriTuntutanKetua : memoriTuntutan;
                 const storedJenis = targetArray[indexEdit].jenis;
                 
                 if (senaraiPilihan.includes(storedJenis)) {
@@ -2756,7 +2805,12 @@ function bukaTab(tabId, elemenTab) {
                 document.getElementById('jumlahTuntutan').value = Number(jumlahEdit).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 document.getElementById('indexTuntutanEdit').value = indexEdit;
             } else {
-                document.getElementById('tajukModal').innerHTML = (jenisJadual === 'ketua') ? "Tambah Tuntutan Ketua" : "Tambah Tuntutan";
+                // --- KAWAL TAJUK MODAL SECARA DINAMIK ---
+                let tajukBaru = "Tambah Tuntutan";
+                if (jenisJadual === 'ketua') tajukBaru = "Tambah Tuntutan Ketua";
+                else if (jenisJadual.startsWith('tambahan_')) tajukBaru = `Tambah Tuntutan Pengadu ${jenisJadual.split('_')[1]}`;
+                
+                document.getElementById('tajukModal').innerHTML = tajukBaru;
                 document.getElementById('jenisTuntutan').value = "";
                 jenisTuntutanLain.style.display = 'none'; jenisTuntutanLain.value = "";
                 document.getElementById('keteranganTuntutan').value = "";
@@ -2765,8 +2819,6 @@ function bukaTab(tabId, elemenTab) {
             }
             setTimeout(() => { document.getElementById('jenisTuntutan').focus(); document.getElementById('jenisTuntutan').style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.3)'; document.getElementById('jenisTuntutan').addEventListener('blur', function() { this.style.boxShadow = 'none'; }, { once: true }); }, 100);
         }
-
-        function tutupModalTuntutan() { document.getElementById('modalTuntutan').style.display = 'none'; }
 
         function simpanTuntutan() {
             let jenis = document.getElementById('jenisTuntutan').value;
@@ -2783,12 +2835,18 @@ function bukaTab(tabId, elemenTab) {
             if (jenisJadual === 'ketua') {
                 if (index > -1) { memoriTuntutanKetua[index] = { jenis: jenis, keterangan: keterangan, jumlah: jumlah }; } 
                 else { memoriTuntutanKetua.push({ jenis: jenis, keterangan: keterangan, jumlah: jumlah }); }
+                renderJadualTuntutan();
+            } else if (jenisJadual.startsWith('tambahan_')) {
+                let idxTambahan = parseInt(jenisJadual.split('_')[1]);
+                if (index > -1) { memoriTuntutanTambahan[idxTambahan][index] = { jenis: jenis, keterangan: keterangan, jumlah: jumlah }; } 
+                else { memoriTuntutanTambahan[idxTambahan].push({ jenis: jenis, keterangan: keterangan, jumlah: jumlah }); }
+                renderJadualTuntutanTambahan(idxTambahan);
             } else {
                 if (index > -1) { memoriTuntutan[index] = { jenis: jenis, keterangan: keterangan, jumlah: jumlah }; } 
                 else { memoriTuntutan.push({ jenis: jenis, keterangan: keterangan, jumlah: jumlah }); }
+                renderJadualTuntutan();
             }
 
-            renderJadualTuntutan(); 
             tutupModalTuntutan(); 
         }
 
@@ -2796,13 +2854,20 @@ function bukaTab(tabId, elemenTab) {
             if (confirm("Adakah anda pasti mahu memadam tuntutan ini?")) { 
                 if (jenisJadual === 'ketua') {
                     memoriTuntutanKetua.splice(index, 1); 
+                    renderJadualTuntutan();
+                } else if (jenisJadual.startsWith('tambahan_')) {
+                    let idxTambahan = parseInt(jenisJadual.split('_')[1]);
+                    memoriTuntutanTambahan[idxTambahan].splice(index, 1);
+                    renderJadualTuntutanTambahan(idxTambahan);
                 } else {
                     memoriTuntutan.splice(index, 1); 
+                    renderJadualTuntutan();
                 }
-                renderJadualTuntutan(); 
             } 
         }
 
+        function tutupModalTuntutan() { document.getElementById('modalTuntutan').style.display = 'none'; }
+       
         function renderJadualTuntutan() {
             const tbody = document.querySelector("#jadualTuntutan tbody");
             if (tbody) {
@@ -3175,6 +3240,7 @@ function resetBorangPendaftaran() {
     indexKesSemasa = -1; 
     memoriTuntutan = []; 
     memoriTuntutanKetua = []; 
+    memoriTuntutanTambahan = {};
     renderJadualTuntutan();
     
     // --- 1. TAMBAHAN PENTING: Reset Status Edit Kenyataan ---
