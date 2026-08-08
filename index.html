@@ -3998,7 +3998,11 @@ if (memoriTuntutan.length === 0) { htmlJadualTuntutan = `<tr><td colspan="3" cla
                     
                     htmlJadualTuntutan += `<tr><td class="num">${index + 1}</td><td>${item.jenis} <span style="font-size: 0.9em; color: #333;">${keteranganCetak}</span></td><td class="money">RM ${Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
                 });
-
+    
+            // BARIS INI DAN SIMBOL PENUTUP '}' TERCICIR DALAM KOD SEBELUM INI:
+                htmlJadualTuntutan += `<tr class="footer-row"><td colspan="2" style="text-align:right; padding-right: 15px;">JUMLAH KESELURUHAN</td><td class="money">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+            }
+            
             const t = new Date();
             const tarikhHariIniFormat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
 
