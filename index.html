@@ -2518,7 +2518,7 @@ function janaKenyataanAwal() {
                 
                 let p0 = "";
                 if (aduanBerkumpulan) {
-                    let bilPengadu = parseInt(document.getElementById('bilanganPengadu').value) || 1;
+                    let bilPengadu = parseInt(document.getElementById('bilPengadu').value) || 1;
                     let wakil = bilPengadu > 1 ? bilPengadu - 1 : 0;
                     let teksDefendanKumpulan = defNama;
                     if (jenisDef === 'SSM (Sdn. Bhd./Bhd./Enterprise)' || jenisDef === 'SSM (Sdn. Bhd./Bhd.)' || jenisDef === 'Lain-lain' || jenisDef === 'SSM (Enterprise)') {
@@ -3955,7 +3955,7 @@ for (const key in formData) {
                 m3Nama = w_nama; m3KP = w_kp; m3Jantina = w_jantina; m3Umur = w_umur; m3DOB = w_dob; m3Warga = w_warga; m3Tandatangan = w_nama;
             } else {
                 cetakPengaduNama = p_nama;
-                if (aduanBerkumpulan) { const bil = parseInt(document.getElementById('bilanganPengadu')?.value) || 1; if (bil > 1) cetakPengaduNama += ` DAN ${bil - 1} YANG LAIN`; }
+                if (aduanBerkumpulan) { const bil = parseInt(document.getElementById('bilPengadu')?.value) || 1; if (bil > 1) cetakPengaduNama += ` DAN ${bil - 1} YANG LAIN`; }
                 cetakPengaduAlamat = p_alamat; cetakPengaduTel = p_hp !== '-' ? p_hp : p_tel; cetakPengaduEmel = p_emel; cetakPengaduPerniagaan = '';
                 cetakDefendanNama = c_nama; cetakDefendanAlamat = c_alamat; cetakDefendanTel = c_hp !== '-' ? c_hp : c_tel; cetakDefendanEmel = c_emel;
                 cetakDefendanPerniagaan = c_jenisPerniagaan !== '-' ? `<br><span style="text-transform: none;">Jenis Perusahaan: ${c_jenisPerniagaan}</span>` : '';
@@ -4095,7 +4095,7 @@ function bukaPreviewPDF(jenisBorang) {
         const gajiRaw = document.getElementById('gajiPokokPengadu')?.value;
         const gaji = gajiRaw ? Number(gajiRaw.replace(/,/g, '')).toLocaleString('en-MY', { minimumFractionDigits: 2 }) : '';
 
-        const bilPengaduRaw = parseInt(document.getElementById('bilanganPengadu')?.value) || 1;
+        const bilPengaduRaw = parseInt(document.getElementById('bilPengadu')?.value) || 1;
         const bilDiwakili = bilPengaduRaw > 1 ? bilPengaduRaw - 1 : 0;
 
         const c_nama = document.getElementById('namaDefendan')?.value?.toUpperCase() || '';
