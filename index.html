@@ -3987,14 +3987,17 @@ for (const key in formData) {
 
             let htmlJadualTuntutan = "";
             let jumlahKeseluruhan = 0;
-            if (memoriTuntutan.length === 0) { htmlJadualTuntutan = `<tr><td colspan="3" class="num">Tiada tuntutan direkodkan.</td></tr>`; } else {
+if (memoriTuntutan.length === 0) { htmlJadualTuntutan = `<tr><td colspan="3" class="num">Tiada tuntutan direkodkan.</td></tr>`; } else {
                 memoriTuntutan.forEach((item, index) => {
                     const jumlahNum = parseFloat(item.jumlah);
                     jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
-                    htmlJadualTuntutan += `<tr><td class="num">${index + 1}</td><td>${item.jenis} <span style="font-size: 0.9em; color: #333;">${item.keterangan}</span></td><td class="money">RM ${Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                    
+                    // --- KOD BARU: Sembunyikan teks khusus untuk cetakan sahaja ---
+                    let keteranganCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
+                    // --------------------------------------------------------------
+                    
+                    htmlJadualTuntutan += `<tr><td class="num">${index + 1}</td><td>${item.jenis} <span style="font-size: 0.9em; color: #333;">${keteranganCetak}</span></td><td class="money">RM ${Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
                 });
-                htmlJadualTuntutan += `<tr class="footer-row"><td colspan="2" style="text-align:right; padding-right: 15px;">JUMLAH KESELURUHAN</td><td class="money">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
-            }
 
             const t = new Date();
             const tarikhHariIniFormat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
