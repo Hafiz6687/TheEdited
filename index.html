@@ -1517,8 +1517,7 @@ function bukaMaklumatKes(index) {
             const p_tel = dataSistem['telPengadu'] || "-";
             const p_hp = dataSistem['hpPengadu'] || "-";
             const p_emel = dataSistem['emelPengadu'] || "-";
-            const p_bil_pengadu = dataSistem['bilanganPengadu'] ? dataSistem['bilanganPengadu'] + " Orang" : "-";
-
+            const p_bil_pengadu = dataSistem['bilPengadu'] ? dataSistem['bilPengadu'] + " Orang" : "-";
             const d_nama = kes.namaDefendan;
             const d_id = dataSistem['noPendDefendan'] || "-";
             
@@ -1822,6 +1821,15 @@ function tindakanSebutan() {
                 const inputs = kes.dataBorang.inputs;
                 const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
                 
+                // --- PENAMBAHBAIKAN: EKSTRAK BILANGAN UNTUK KES BERKUMPULAN ---
+                let teksPihak = "merupakan pihak Pengadu";
+                if (inputs['aduan'] === 'Berkumpulan' && !isMajikan) {
+                    let totalPengadu = parseInt(inputs['bilPengadu']) || 1;
+                    let bilDiwakili = totalPengadu > 1 ? totalPengadu - 1 : 0;
+                    teksPihak = `merupakan pihak Ketua Pengadu yang mewakili ${bilDiwakili} orang yang lain`;
+                }
+                // ---------------------------------------------------------------
+                
                 if (isMajikan) {
                     let namaWakil = inputs['namaWakilMajikan'] || '[NAMA WAKIL]';
                     let kpWakil = inputs['noMyKadWakil'] || '_________________________';
@@ -1848,7 +1856,8 @@ function tindakanSebutan() {
                     
                     namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
 
-                    perengganPengenalan = `Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (${jenisId}: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
+                    // --- MENGGUNAKAN teksPihak YANG TELAH DIPROSES DI ATAS ---
+                    perengganPengenalan = `Bahawasanya saya, <strong>${namaP.toUpperCase()}</strong> (${jenisId}: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP.toUpperCase()}</strong>, ${teksPihak} yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD.toUpperCase()}</strong> (selepas ini dirujuk sebagai "Defendan").`;
                     
                     namaTandatangan = namaP.toUpperCase();
                     kpTandatangan = kpP;
@@ -1858,29 +1867,30 @@ function tindakanSebutan() {
                 kpP = "_________________________";
                 alamatP = "____________________________________________________";
                 namaD = kes.namaDefendan.replace(/<br>.*$/g, '').toUpperCase();
-                perengganPengenalan = `Bahawasanya saya, <strong>${namaP}</strong> (No. Kad Pengenalan / Pasport / Pendaftaran: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP}</strong>, merupakan pihak Pengadu yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD}</strong> (selepas ini dirujuk sebagai "Defendan").`;
+                
+                // Fallback sekiranya ia adalah fail dummy lama
+                let teksPihak = kes.jenisAduan === 'Berkumpulan' ? 
+                                `merupakan pihak Ketua Pengadu yang mewakili pengadu-pengadu yang lain` : 
+                                `merupakan pihak Pengadu`;
+
+                perengganPengenalan = `Bahawasanya saya, <strong>${namaP}</strong> (No. Kad Pengenalan / Pasport / Pendaftaran: <strong>${kpP}</strong>) yang beralamat di <strong>${alamatP}</strong>, ${teksPihak} yang telah memfailkan aduan atau tuntutan terhadap <strong>${namaD}</strong> (selepas ini dirujuk sebagai "Defendan").`;
                 namaTandatangan = namaP;
                 kpTandatangan = kpP;
             }
 
-            // --- KOD AUTO EXTRACT BAHARU ---
             // 1. Tarikh Hari Ini
             const t = new Date();
             const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
             const tarikhHariIniFormat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
             
-            // 2. Tempat Lalai
-            const tempatDaftar = "Pejabat Tenaga Kerja Kluang";
-
-            // 3. Nama Pegawai (Tarik dari profil sidebar)
+            // 2. Nama Pegawai (Tarik dari profil sidebar)
             let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
             const namaPegawai = namaPegawaiRaw.toUpperCase();
             
-            // 4. Jawatan Pegawai
+            // 3. Jawatan Pegawai
             const jawatanPegawai = "Pegawai Tenaga Kerja";
-            // ---------------------------------
 
-            // Stuktur HTML Rasmi Akuan Penarikan Balik Kes
+            // Struktur HTML Rasmi Akuan Penarikan Balik Kes
             const htmlTarikBalik = `
                 <style>
                     @media print {
@@ -1945,27 +1955,21 @@ function tindakanSebutan() {
             document.getElementById('previewContent').innerHTML = htmlTarikBalik;
             document.getElementById('printArea').innerHTML = htmlTarikBalik;
             
-            // --- FUNGSI BARU: Auto-Tukar Label MyKad atau Passport ---
             const labelPreview = document.querySelector('#previewContent #labelIdTandatangan');
             const labelPrint = document.querySelector('#printArea #labelIdTandatangan');
-            
-            // Kita semak terus menggunakan data kpTandatangan sedia ada
             const teksLabel = kpTandatangan.includes('-') ? 'No. MyKad:' : 'No. Passport:';
 
             if (labelPreview) labelPreview.innerHTML = teksLabel;
             if (labelPrint) labelPrint.innerHTML = teksLabel;
-            // ---------------------------------------------------------
 
             // Konfigurasi butang Action Dropdown di penjuru atas kanan
             document.getElementById('menuCetakAkuan').style.display = 'none';
             document.getElementById('menuCetakKenyataan').style.display = 'none';
             document.getElementById('menuDaftar').style.display = 'none';
             
-            // Manipulasi butang G1 yang sedia ada untuk menjadi butang Cetak Akuan
             const menuCetakG1 = document.getElementById('menuCetakG1');
             menuCetakG1.style.display = 'flex';
             menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
-            // Pastikan keadaan butang lalai apabila modal baru dibuka
             document.getElementById('menuKemaskini').style.display = 'flex';
             document.getElementById('menuBatal').style.display = 'flex';
             document.getElementById('menuSelesai').style.display = 'none';
@@ -1974,25 +1978,17 @@ function tindakanSebutan() {
                 document.getElementById('actionMenu').classList.remove('show');
                 window.print();
                 
-                // Menghilangkan butang cetak dan menukar menu selepas ditekan
                 setTimeout(() => {
                     menuCetakG1.style.display = 'none';
-                    
-                    // --- TAMBAHAN BARU: Hide Batal/Kemaskini, Show Selesai ---
                     document.getElementById('menuKemaskini').style.display = 'none';
                     document.getElementById('menuBatal').style.display = 'none';
                     document.getElementById('menuSelesai').style.display = 'flex';
-                    // ---------------------------------------------------------
                 }, 500);
             };
 
-            // Tambahkan alert di sini sebelum modal dipaparkan
             alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
-
-            // Tampilkan Modal Preview
             document.getElementById('modalPreview').style.display = 'flex';
         }
-
 
         function toggleWakilMajikan() {
             const kandungan = document.getElementById('kandunganWakilMajikan');
