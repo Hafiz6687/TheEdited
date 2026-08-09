@@ -1988,10 +1988,61 @@ function tindakanSebutan() {
             alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
             document.getElementById('modalPreview').style.display = 'flex';
         }
-// FUNGSI BAHARU: Menjana dan Memaparkan Surat Notis Sebutan (Untuk Pengadu & Defendan)
+// =========================================================================
+// FUNGSI GLOBAL CETAK NOTIS (Dibina mirip seperti fungsi cetakKhusus)
+// =========================================================================
+window.isNotisPengaduPrinted = false;
+window.isNotisDefendanPrinted = false;
+
+window.cetakNotis = function(jenis) {
+    // 1. Tutup menu dropdown
+    document.getElementById('actionMenu').classList.remove('show');
+
+    // 2. Tambah class pada body untuk sembunyikan notis yang tak berkaitan masa print
+    document.body.classList.add('print-only-' + jenis);
+    window.print();
+    document.body.classList.remove('print-only-' + jenis);
+
+    // 3. Kemaskini status & ubah rupa butang jadi hijau (Selesai)
+    if (jenis === 'pengadu') {
+        window.isNotisPengaduPrinted = true;
+        const btnP = document.getElementById('menuCetakNotisPengadu');
+        if (btnP) {
+            btnP.innerHTML = '✅ Cetak Notis Sebutan Pengadu';
+            btnP.style.color = '#10b981'; // Hijau
+        }
+    } else if (jenis === 'defendan') {
+        window.isNotisDefendanPrinted = true;
+        const btnD = document.getElementById('menuCetakNotisDefendan');
+        if (btnD) {
+            btnD.innerHTML = '✅ Cetak Notis Sebutan Defendan';
+            btnD.style.color = '#10b981'; // Hijau
+        }
+    }
+
+    // 4. Semak jika kedua-duanya dah dicetak, terus kembali ke Senarai Tugas
+    if (window.isNotisPengaduPrinted && window.isNotisDefendanPrinted) {
+        setTimeout(() => {
+            document.getElementById('modalPreview').style.display = 'none';
+            tukarView('senarai');
+            
+            // Bersihkan menu supaya tak muncul di modal lain
+            if(document.getElementById('menuCetakNotisPengadu')) document.getElementById('menuCetakNotisPengadu').style.display = 'none';
+            if(document.getElementById('menuCetakNotisDefendan')) document.getElementById('menuCetakNotisDefendan').style.display = 'none';
+        }, 500);
+    }
+};
+
+// =========================================================================
+// FUNGSI MENJANA DAN MEMAPARKAN SURAT NOTIS SEBUTAN
+// =========================================================================
 function bukaPreviewNotisSebutan() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
+
+    // Reset status cetakan setiap kali preview baru dibuka
+    window.isNotisPengaduPrinted = false;
+    window.isNotisDefendanPrinted = false;
 
     // Dapatkan maklumat asas
     let noKes = kes.noKes.split('<br>')[0].trim();
@@ -2089,7 +2140,7 @@ function bukaPreviewNotisSebutan() {
         </div>
     `;
 
-    // TEMPLATE PENUTUP UNTUK DIGUNAKAN BERULANG KALI (Garisan telah dimasukkan semula)
+    // TEMPLATE PENUTUP UNTUK DIGUNAKAN BERULANG KALI 
     const templateFooterHTML = `
         <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
         <div class="notis-slogan">
@@ -2113,13 +2164,17 @@ function bukaPreviewNotisSebutan() {
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 body > *:not(#printArea) { display: none !important; }
                 #printArea { display: block !important; }
+
+                /* CSS CETAKAN KHUSUS UNTUK MENYEMBUNYIKAN MUKA SURAT */
+                body.print-only-pengadu #kertasNotisDefendan { display: none !important; }
+                body.print-only-defendan #kertasNotisPengadu { display: none !important; }
                 
                 .kertas-notis { 
                     margin: 0 !important; 
                     padding: 1.5cm 1.27cm !important; 
                     box-shadow: none !important; 
                     width: 100% !important; 
-                    min-height: 297mm !important; /* DIPERBAIKI: Tetapkan min-height supaya garisan absolute tak lari */
+                    min-height: 297mm !important; 
                     page-break-after: always; 
                     position: relative !important;
                 }
@@ -2157,15 +2212,13 @@ function bukaPreviewNotisSebutan() {
 
             .notis-slogan { font-weight: bold; margin-bottom: 30px; font-size: 10pt; line-height: 1.4; }
             .notis-sign { margin-bottom: 50px; font-size: 10pt; }
-            
-            /* DIKEMBALIKAN: Garisan di bawah nama pegawai */
             .notis-footer-line { position: absolute; bottom: 15mm; left: 2.5cm; right: 2.5cm; border-bottom: 1px solid #555; }
         </style>
         
         <!-- ========================================== -->
         <!-- MUKA SURAT 1: NOTIS SEBUTAN (PENGADU)      -->
         <!-- ========================================== -->
-        <div class="kertas-notis">
+        <div class="kertas-notis" id="kertasNotisPengadu">
             ${templateHeaderHTML}
 
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
@@ -2209,7 +2262,7 @@ function bukaPreviewNotisSebutan() {
         <!-- ========================================== -->
         <!-- MUKA SURAT 2: NOTIS SEBUTAN (DEFENDAN)     -->
         <!-- ========================================== -->
-        <div class="kertas-notis">
+        <div class="kertas-notis" id="kertasNotisDefendan">
             ${templateHeaderHTML}
 
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
@@ -2259,23 +2312,69 @@ function bukaPreviewNotisSebutan() {
     document.getElementById('previewContent').innerHTML = htmlNotisSebutan;
     document.getElementById('printArea').innerHTML = htmlNotisSebutan;
 
-    // Kawalan Menu Dropdown untuk Modal Preview
+    // =========================================================================
+    // KAWALAN BUTANG DROPDOWN DINAMIK UNTUK NOTIS SEBUTAN
+    // =========================================================================
+    let actionMenu = document.getElementById('actionMenu');
+
+    // Cipta atau papar butang Cetak Notis Pengadu
+    let btnNotisPengadu = document.getElementById('menuCetakNotisPengadu');
+    if (!btnNotisPengadu) {
+        btnNotisPengadu = document.createElement('a');
+        btnNotisPengadu.id = 'menuCetakNotisPengadu';
+        btnNotisPengadu.href = '#';
+        actionMenu.insertBefore(btnNotisPengadu, document.getElementById('menuBatal'));
+    }
+    btnNotisPengadu.style.display = 'flex';
+    btnNotisPengadu.style.color = 'var(--text-main)';
+    btnNotisPengadu.innerHTML = '🖨️ Cetak Notis Sebutan Pengadu';
+    btnNotisPengadu.onclick = function(e) { e.preventDefault(); cetakNotis('pengadu'); };
+
+    // Cipta atau papar butang Cetak Notis Defendan
+    let btnNotisDefendan = document.getElementById('menuCetakNotisDefendan');
+    if (!btnNotisDefendan) {
+        btnNotisDefendan = document.createElement('a');
+        btnNotisDefendan.id = 'menuCetakNotisDefendan';
+        btnNotisDefendan.href = '#';
+        actionMenu.insertBefore(btnNotisDefendan, document.getElementById('menuBatal'));
+    }
+    btnNotisDefendan.style.display = 'flex';
+    btnNotisDefendan.style.color = 'var(--text-main)';
+    btnNotisDefendan.innerHTML = '🖨️ Cetak Notis Sebutan Defendan';
+    btnNotisDefendan.onclick = function(e) { e.preventDefault(); cetakNotis('defendan'); };
+
+    // Sembunyikan butang standard yang tidak berkaitan supaya tak pening
     document.getElementById('menuCetakAkuan').style.display = 'none';
     document.getElementById('menuCetakKenyataan').style.display = 'none';
     document.getElementById('menuDaftar').style.display = 'none';
     document.getElementById('menuSelesai').style.display = 'none';
-    
-    // Guna menuCetakG1 sebagai butang cetak am
-    const btnCetak = document.getElementById('menuCetakG1');
-    btnCetak.style.display = 'flex';
-    btnCetak.innerHTML = '🖨️ Cetak Notis Sebutan';
-    btnCetak.onclick = function() {
-        document.getElementById('actionMenu').classList.remove('show');
-        window.print();
-    };
+    const menuCetakG1 = document.getElementById('menuCetakG1');
+    if (menuCetakG1) menuCetakG1.style.display = 'none';
 
-    document.getElementById('menuKemaskini').style.display = 'flex';
-    document.getElementById('menuBatal').style.display = 'flex';
+    // Hook keselamatan: Sorok semula butang Notis jika pengguna tekan 'Kemaskini' atau 'Batal'
+    const btnKemaskini = document.getElementById('menuKemaskini');
+    btnKemaskini.style.display = 'flex';
+    if (!btnKemaskini.dataset.hooked) {
+        const oldKemaskini = btnKemaskini.onclick;
+        btnKemaskini.onclick = function(e) {
+            if(document.getElementById('menuCetakNotisPengadu')) document.getElementById('menuCetakNotisPengadu').style.display = 'none';
+            if(document.getElementById('menuCetakNotisDefendan')) document.getElementById('menuCetakNotisDefendan').style.display = 'none';
+            if(oldKemaskini) oldKemaskini(e);
+        };
+        btnKemaskini.dataset.hooked = "true";
+    }
+
+    const btnBatal = document.getElementById('menuBatal');
+    btnBatal.style.display = 'flex';
+    if (!btnBatal.dataset.hooked) {
+        const oldBatal = btnBatal.onclick;
+        btnBatal.onclick = function(e) {
+            if(document.getElementById('menuCetakNotisPengadu')) document.getElementById('menuCetakNotisPengadu').style.display = 'none';
+            if(document.getElementById('menuCetakNotisDefendan')) document.getElementById('menuCetakNotisDefendan').style.display = 'none';
+            if(oldBatal) oldBatal(e);
+        };
+        btnBatal.dataset.hooked = "true";
+    }
 
     // Buka Modal Preview
     document.getElementById('modalPreview').style.display = 'flex';
