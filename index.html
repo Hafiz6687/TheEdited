@@ -1988,50 +1988,52 @@ function tindakanSebutan() {
             alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
             document.getElementById('modalPreview').style.display = 'flex';
         }
-// FUNGSI BAHARU: Menjana dan Memaparkan Surat Notis Sebutan
+// FUNGSI BAHARU: Menjana dan Memaparkan Surat Notis Sebutan (Untuk Pengadu & Defendan)
 function bukaPreviewNotisSebutan() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
     // Dapatkan maklumat asas
     let noKes = kes.noKes.split('<br>')[0].trim();
-    let namaP = "", alamatP = "", namaD = "";
+    let namaP = "", alamatP = "", namaD = "", alamatD = "";
 
+    // Ekstrak Alamat Pengadu dan Defendan
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
         
+        let almtDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "").join('<br>');
+        let almtPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join('<br>');
+
         if (isMajikan) {
             namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]';
-            let almt = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "").join('<br>');
-            alamatP = almt || '[ALAMAT PENGADU]';
+            alamatP = almtDef || '[ALAMAT PENGADU]';
             namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
+            alamatD = almtPeng || '[ALAMAT DEFENDAN]';
         } else {
             namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
-            let almt = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join('<br>');
-            alamatP = almt || '[ALAMAT PENGADU]';
+            alamatP = almtPeng || '[ALAMAT PENGADU]';
             namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
+            alamatD = almtDef || '[ALAMAT DEFENDAN]';
         }
     } else {
         namaP = kes.namaPengadu.replace(/<br>.*$/g, '');
         alamatP = "[ALAMAT PENGADU TIDAK LENGKAP]";
         namaD = kes.namaDefendan.replace(/<br>.*$/g, '');
+        alamatD = "[ALAMAT DEFENDAN TIDAK LENGKAP]";
     }
 
-    // Ekstrak Tarikh dan Masa Sebutan yang diisi dalam borang
+    // Ekstrak Tarikh dan Masa Sebutan
     const tarikhRaw = document.getElementById('mk_tarikh_sebutan').value;
     const masaRaw = document.getElementById('mk_masa_sebutan').value;
-    
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     
-    // Format Tarikh (Cth: 12 Ogos 2026)
     let tarikhSebutanText = "[Tarikh]";
     if (tarikhRaw) {
         let t = new Date(tarikhRaw);
         tarikhSebutanText = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
     }
 
-    // Format Masa (Cth: 10:00 pagi)
     let masaSebutanText = "[Masa]";
     if (masaRaw) {
         let [jam, minit] = masaRaw.split(':');
@@ -2041,6 +2043,16 @@ function bukaPreviewNotisSebutan() {
         masaSebutanText = `${jamFormat}:${minit} ${ampm}`;
     }
 
+    // Ekstrak dan Kira Jumlah Tuntutan (Untuk Surat Defendan)
+    let jumlahKeseluruhan = 0;
+    if (memoriTuntutan && memoriTuntutan.length > 0) {
+        memoriTuntutan.forEach(item => {
+            let jum = parseFloat(item.jumlah);
+            if (!isNaN(jum)) jumlahKeseluruhan += jum;
+        });
+    }
+    const jumlahKeseluruhanFormat = jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     // Format Tarikh Hari Ini untuk Surat
     const tH = new Date();
     const tarikhSurat = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
@@ -2048,131 +2060,108 @@ function bukaPreviewNotisSebutan() {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // Reka Bentuk Surat HTML
+    // TEMPLATE HEADER UNTUK DIGUNAKAN BERULANG KALI
+    const templateHeaderHTML = `
+        <div class="notis-header">
+            <div class="notis-header-kiri">
+                <div class="notis-logo">
+                    <img src="jata-negara.png" alt="Logo Jata Negara">
+                </div>
+                <div class="notis-jabatan">
+                    <div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div>
+                </div>
+            </div>
+            
+            <div class="notis-hubungi">
+                <table style="font-family: Arial, sans-serif; font-size: 8pt;">
+                    <tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr>
+                    <tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr>
+                    <tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr>
+                    <tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // TEMPLATE PENUTUP UNTUK DIGUNAKAN BERULANG KALI
+    const templateFooterHTML = `
+        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
+        <div class="notis-slogan">
+            " MALAYSIA MADANI "<br>
+            " BERKHIDMAT UNTUK NEGARA "<br>
+            <em>"Pekerja MADANI Kesuma Bangsa"</em>
+        </div>
+        <div class="notis-sign">Saya yang menjalankan amanah,</div>
+        <div style="font-weight: bold; text-transform: uppercase;">
+            ${namaPegawai}<br>
+            <span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
+        </div>
+        <div class="notis-footer-line"></div>
+    `;
+
+    // Reka Bentuk Surat HTML Penuh
     const htmlNotisSebutan = `
         <style>
             @media print {
-                .kertas-notis { margin: 0 !important; padding: 0 !important; box-shadow: none !important; width: 100% !important; min-height: auto !important; }
+                /* PENAMBAHAN: page-break-after supaya mencetak di halaman baharu */
+                .kertas-notis { margin: 0 !important; padding: 0 !important; box-shadow: none !important; width: 100% !important; min-height: auto !important; page-break-after: always; }
+                .kertas-notis:last-child { page-break-after: auto; }
                 body { background: white; margin: 0; }
                 body > *:not(#printArea) { display: none !important; }
                 #printArea { display: block !important; }
             }
             .kertas-notis {
                 background: white; width: 210mm; min-height: 297mm; 
-                /* MARGIN HEADER SAHAJA: Kiri 1.27cm, Kanan 1.27cm */
                 padding: 1.5cm 1.27cm; 
                 margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
                 font-family: Arial, Helvetica, sans-serif; color: black; font-size: 10pt; line-height: 1.4;
                 box-sizing: border-box; position: relative;
             }
             
-            /* HEADER LAYOUT */
-            .notis-header { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: flex-end; 
-                border-bottom: 1.5px solid #000; 
-                padding-bottom: 4px; 
-                margin-bottom: 15px; 
-            }
-            .notis-header-kiri {
-                display: flex;
-                align-items: flex-start; 
-                gap: 15px; 
-                flex: 1; 
-            }
-            .notis-logo {
-                flex-shrink: 0; 
-            }
-            .notis-logo img { 
-                width: 120px; 
-                height: auto; 
-                display: block; 
-            }
-            .notis-jabatan { 
-                text-align: left; 
-                line-height: 1.2; 
-            }
-            .notis-hubungi { 
-                flex-shrink: 0;
-                width: 200px; 
-                font-family: Arial, sans-serif;
-                font-size: 8pt; 
-                line-height: 1.3; 
-            }
-            
-            /* HUBUNGI TABLE GRID */
+            .notis-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 15px; }
+            .notis-header-kiri { display: flex; align-items: flex-start; gap: 15px; flex: 1; }
+            .notis-logo { flex-shrink: 0; }
+            .notis-logo img { width: 180px; height: auto; display: block; }
+            .notis-jabatan { text-align: left; line-height: 1.2; }
+            .notis-hubungi { flex-shrink: 0; width: 200px; font-family: Arial, sans-serif; font-size: 8pt; line-height: 1.3; }
             .notis-hubungi table { width: 100%; border: none; font-size: 8pt; border-collapse: collapse; }
             .notis-hubungi td { padding: 1px 0; vertical-align: top; border: none; }
             .kol-label { width: 40%; white-space: nowrap; }
             .kol-titik { width: 5%; text-align: center; }
 
-            /* BADAN SURAT */
-            .notis-body-wrapper {
-                padding: 0 1.23cm; /* Total Margin Kiri/Kanan = 2.5cm */
-            }
-
-            /* RUJUKAN & TARIKH (DIPERBAIKI: Rapat sepenuhnya ke Dinding Kanan) */
-            .notis-rujukan { 
-                text-align: right; 
-                width: 100%; 
-                font-size: 10pt; 
-                margin-top: 10px;
-                margin-bottom: 20px; 
-            }
+            .notis-body-wrapper { padding: 0 1.23cm; }
+            .notis-rujukan { text-align: right; width: 100%; font-size: 10pt; margin-top: 10px; margin-bottom: 20px; }
             
-            /* ISI SURAT */
             .notis-alamat { margin-bottom: 20px; font-size: 10pt; text-transform: uppercase; line-height: 1.3; }
             .notis-tajuk { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
             .notis-garis-tajuk { border: 0; border-top: 1px solid #000; margin-top: 5px; margin-bottom: 15px; }
             .notis-isi { text-align: justify; font-size: 10pt; margin-bottom: 15px; }
-            
-            /* PENGATUR JARAK NOMBOR */
-            .jarak-tab { display: inline-block; width: 30px; } /* Jarak lebih kurang 1 Tab di antara nombor dan huruf pertama */
+            .jarak-tab { display: inline-block; width: 30px; }
 
             .notis-slogan { font-weight: bold; margin-bottom: 30px; font-size: 10pt; line-height: 1.4; }
             .notis-sign { margin-bottom: 50px; font-size: 10pt; }
             .notis-footer-line { position: absolute; bottom: 15mm; left: 2.5cm; right: 2.5cm; border-bottom: 1px solid #555; }
         </style>
         
+        <!-- ========================================== -->
+        <!-- MUKA SURAT 1: NOTIS SEBUTAN (PENGADU)      -->
+        <!-- ========================================== -->
         <div class="kertas-notis">
-            <!-- HEADER -->
-            <div class="notis-header">
-                <div class="notis-header-kiri">
-                    <div class="notis-logo">
-                        <img src="jata-negara.png" alt="Logo Jata Negara">
-                    </div>
-                    <div class="notis-jabatan">
-                        <div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div>
-                        <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div>
-                    </div>
-                </div>
-                
-                <div class="notis-hubungi">
-                    <table style="font-family: Arial, sans-serif; font-size: 8pt;">
-                        <tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr>
-                        <tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr>
-                        <tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr>
-                        <tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr>
-                    </table>
-                </div>
-            </div>
+            ${templateHeaderHTML}
 
-            <!-- KANDUNGAN SURAT UTAMA -->
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
-                
-                <!-- RUJUKAN & TARIKH (DIPERBAIKI: Rapat sepenuhnya ke Dinding Kanan) -->
                 <div class="notis-rujukan">
                     Rujukan Kami : ${noKes}<br>
                     Tarikh : ${tarikhSurat}
                 </div>
 
-                <!-- ALAMAT PENERIMA -->
+                <!-- ALAMAT PENGADU -->
                 <div class="notis-alamat">
                     <strong>${namaP}</strong><br>
                     ${alamatP}
@@ -2180,7 +2169,6 @@ function bukaPreviewNotisSebutan() {
 
                 <div style="margin-bottom: 15px;">Tuan,</div>
 
-                <!-- TAJUK SURAT -->
                 <div class="notis-tajuk">
                     KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>
                     ANTARA PENGADU : ${namaP}<br>
@@ -2188,10 +2176,7 @@ function bukaPreviewNotisSebutan() {
                 </div>
                 <hr class="notis-garis-tajuk">
 
-                <!-- ISI SURAT -->
-                <div class="notis-isi">
-                    Dengan hormatnya merujuk kepada perkara di atas.
-                </div>
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
 
                 <div class="notis-isi">
                     2.<span class="jarak-tab"></span>Tuan diminta hadir di pejabat ini pada <strong>${tarikhSebutanText} ${masaSebutanText}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.
@@ -2205,26 +2190,57 @@ function bukaPreviewNotisSebutan() {
                     4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.
                 </div>
 
-                <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
-
-                <!-- SLOGAN -->
-                <div class="notis-slogan">
-                    " MALAYSIA MADANI "<br>
-                    " BERKHIDMAT UNTUK NEGARA "<br>
-                    <em>"Pekerja MADANI Kesuma Bangsa"</em>
-                </div>
-
-                <!-- PENUTUP & TANDATANGAN -->
-                <div class="notis-sign">Saya yang menjalankan amanah,</div>
-                
-                <div style="font-weight: bold; text-transform: uppercase;">
-                    ${namaPegawai}<br>
-                    <span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
-                </div>
+                ${templateFooterHTML}
             </div>
+        </div>
 
-            <!-- FOOTER LINE -->
-            <div class="notis-footer-line"></div>
+        <!-- ========================================== -->
+        <!-- MUKA SURAT 2: NOTIS SEBUTAN (DEFENDAN)     -->
+        <!-- ========================================== -->
+        <div class="kertas-notis">
+            ${templateHeaderHTML}
+
+            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
+                <div class="notis-rujukan">
+                    Rujukan Kami : ${noKes}<br>
+                    Tarikh : ${tarikhSurat}
+                </div>
+
+                <!-- ALAMAT DEFENDAN -->
+                <div class="notis-alamat">
+                    <strong>${namaD}</strong><br>
+                    ${alamatD}
+                </div>
+
+                <div style="margin-bottom: 15px;">Tuan,</div>
+
+                <div class="notis-tajuk">
+                    KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>
+                    ANTARA PENGADU : ${namaP}<br>
+                    TERHADAP DEFENDAN : ${namaD}
+                </div>
+                <hr class="notis-garis-tajuk">
+
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+
+                <div class="notis-isi">
+                    2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.
+                </div>
+
+                <div class="notis-isi">
+                    3.<span class="jarak-tab"></span>Tuan diminta hadir ke pejabat ini pada <strong>${tarikhSebutanText} ${masaSebutanText}</strong> untuk sebutan kes (perbincangan penyelesaian tuntutan). Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari sebutan, suatu tarikh perbicaraan akan ditetapkan.
+                </div>
+
+                <div class="notis-isi">
+                    4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.
+                </div>
+                
+                <div class="notis-isi">
+                    5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.
+                </div>
+
+                ${templateFooterHTML}
+            </div>
         </div>
     `;
 
